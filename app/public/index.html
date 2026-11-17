@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <!-- 状态栏 / 刘海区染色：随明暗主题改写（默认值仅占位，下面脚本会在首帧前定妥） -->
+  <meta name="theme-color" id="theme-color-meta" content="#010102" />
+  <script>
+    // 首帧前定妥主题 + 状态栏染色，避免刘海区闪成默认深色（口径与 app.js 的 initTheme/applyTheme 一致）
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search).get('theme');
+        var t = q || localStorage.getItem('ol-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = t;
+        document.getElementById('theme-color-meta').content = (t === 'light' ? '#ffffff' : '#010102');
+        // 侧栏折叠态也在首帧前定妥（挂 <html>，body 尚未解析）——避免展开→折叠的闪跳
+        if (localStorage.getItem('ol-sidebar-collapsed') === '1') document.documentElement.classList.add('sb-collapsed');
+      } catch (e) {}
+    })();
+  </script>
+  <title>望子成龙小学</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 全局网络进度条：任何 fetch 在飞时顶部出现细条（隧道下补「真空期无反馈」的观感） -->
+  <div id="net-bar"></div>
+
+  <!-- 侧边栏 -->
+  <aside id="sidebar">
+    <div class="ws">
+      <img class="ws-mark" src="/logo.png" alt="望子成龙小学" />
+      <div class="ws-text">
+        <b>望子成龙小学</b>
+        <span>示例项目 · Agent 办公室</span>
+      </div>
+    </div>
+
+    <nav id="nav">
+      <a class="nav-item active" data-view="tasks" href="javascript:void 0" title="任务">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M5 8.2l2 2 4-4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-label">任务</span>
+      </a>
+      <a class="nav-item" data-view="runs" href="javascript:void 0" title="运行">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M5 5.5l3 2.5-3 2.5M9.5 10.5H11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-label">运行</span>
+        <span id="nav-running" class="nav-count hidden"></span>
+      </a>
+      <a class="nav-item" data-view="chain" href="javascript:void 0" title="会话看板">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h5.5a2.5 2.5 0 0 1 0 5H6.5a2.5 2.5 0 0 0 0 5H12"/><path d="M10 2.8l2 1.7-2 1.7M6 9.8l-2 1.7 2 1.7"/></svg>
+        <span class="nav-label">会话看板</span>
+      </a>
+      <a class="nav-item" data-view="patrol" href="javascript:void 0" title="巡检">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+        <span class="nav-label">巡检</span>
+      </a>
+      <a class="nav-item" data-view="meeting" href="javascript:void 0" title="会议室">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="1.8"/><circle cx="11" cy="6" r="1.8"/><path d="M1.7 13c0-2 1.5-3.2 3.3-3.2S8.3 11 8.3 13M7.7 13c0-2 1.5-3.2 3.3-3.2S14.3 11 14.3 13"/></svg>
+        <span class="nav-label">会议室</span>
+      </a>
+    </nav>
+
+    <div class="side-label">员工</div>
+    <div id="emp-list"></div>
+
+    <div class="side-controls">
+      <button class="btn ghost" id="sidebar-toggle" onclick="toggleSidebarCollapse()" title="折叠侧栏" aria-label="折叠侧栏" aria-pressed="false">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M6 2.5v11" stroke-linecap="round"/></svg>
+      </button>
+      <button class="btn ghost" id="settings-btn" onclick="openSettings()" title="设置" aria-label="设置">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M13.3 9.7a1 1 0 0 0 .2 1.1l.05.05a1.2 1.2 0 1 1-1.7 1.7l-.05-.05a1 1 0 0 0-1.7.7v.15a1.2 1.2 0 1 1-2.4 0v-.08a1 1 0 0 0-1.75-.66l-.05.05a1.2 1.2 0 1 1-1.7-1.7l.05-.05a1 1 0 0 0-.7-1.7h-.15a1.2 1.2 0 1 1 0-2.4h.08a1 1 0 0 0 .66-1.75l-.05-.05a1.2 1.2 0 1 1 1.7-1.7l.05.05a1 1 0 0 0 1.1.2H6a1 1 0 0 0 .6-.92V2.7a1.2 1.2 0 1 1 2.4 0v.08a1 1 0 0 0 1.7.7l.05-.05a1.2 1.2 0 1 1 1.7 1.7l-.05.05a1 1 0 0 0-.2 1.1V6a1 1 0 0 0 .92.6h.15a1.2 1.2 0 1 1 0 2.4h-.08a1 1 0 0 0-.92.6z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 移动端抽屉遮罩：仅手机 + 抽屉打开时显示 -->
+  <div id="sidebar-scrim" onclick="closeSidebar()"></div>
+
+  <!-- 主区 -->
+  <main>
+    <!-- 中栏 header：桌面隐藏（折叠/设置已移到左栏下方，刷新/派工按老板拍板删除）；仅移动端显示（汉堡开抽屉） -->
+    <header id="topbar">
+      <button class="btn ghost" id="menu-toggle" onclick="toggleSidebar()" title="菜单" aria-label="菜单">
+        <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      </button>
+      <div id="topbar-title">任务</div>
+    </header>
+
+    <div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+    <div id="content">
+      <section id="view-tasks" class="view"></section>
+      <section id="view-runs" class="view hidden"></section>
+      <section id="view-chain" class="view hidden"></section>
+      <section id="view-patrol" class="view hidden"></section>
+      <section id="view-meeting" class="view hidden"></section>
+    </div>
+  </main>
+
+  <!-- 右侧聊天坞：不离开当前页面即可与员工对话 -->
+  <aside id="chat-panel" class="hidden">
+    <div id="chat-resizer" title="拖拽调整聊天坞宽度"></div>
+    <div id="run-head"></div>
+    <div id="pinned-card" class="hidden" data-collapsed="0"></div>
+    <div id="chat-loading" class="hidden"><span class="cl-spin"></span><span>加载消息…</span></div>
+    <div id="run-output"></div>
+    <div id="card-batch-bar" class="hidden"></div>
+    <form id="reply-form">
+      <div id="patrol-banner" class="patrol-banner hidden" data-testid="patrol-takeover-banner" aria-live="polite"></div>
+      <div class="composer">
+        <div id="composer-attach" class="hidden"></div>
+        <textarea id="reply-text" rows="2" placeholder="和员工聊聊…（随意聊；点「派工」发正式任务；可粘贴/拖拽/选择图片或文件）"></textarea>
+        <div class="composer-bar">
+          <input type="file" id="attach-input" multiple hidden />
+          <button type="button" class="btn sm secondary attach-btn" onclick="document.getElementById('attach-input').click()" title="添加附件（图片或文件，也可直接粘贴/拖拽）">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <button type="button" id="chatlog-btn" class="btn sm secondary" onclick="openChatlogPaste()" title="插入一段聊天记录（弹出独立粘贴框，粘进来以可读的聊天记录块呈现）">＋聊天记录</button>
+          <button type="button" id="precheck-btn" class="btn sm secondary hidden" onclick="openImmersiveEditor()" title="沉浸式编辑器：写文字＋粘贴/拖入/添加截图（图文穿插），一起发给菲菲">＋预检单</button>
+          <button type="button" id="r-dispatch" class="btn sm secondary" onclick="toggleDispatchMode()" title="将本条消息作为正式派工发送（员工走完整 SOP 并回写档案）">派工</button>
+          <select id="r-task" class="hidden" title="挂任务档案"></select>
+          <span class="spacer"></span>
+          <button type="button" id="run-takeover" class="btn sm hidden" onclick="takeoverRun()" title="中断员工当前动作、按上方输入的指令继续（保留会话上下文，区别于「停止」的彻底终止）">⚡ 接管</button>
+          <button type="submit" class="btn sm primary send-btn" title="发送（回车 ⏎）" aria-label="发送">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </form>
+  </aside>
+
+  <!-- 插入聊天记录弹层（独立粘贴框 → 收成待发聊天记录块）-->
+  <div id="chatlog-modal" class="overlay hidden" onclick="if(event.target===this)closeChatlogPaste()">
+    <div class="modal">
+      <div class="modal-title">粘贴聊天记录</div>
+      <span class="ps-hint" style="display:block;margin-bottom:8px">把企业微信/群里「多选复制」的聊天记录粘到下面；<strong>可在对应位置直接粘贴 / 拖入 / 「添加图片」放截图——图文会按聊天顺序穿插</strong>。插入后以可折叠的聊天记录块呈现，输入框仍可写你的指令（如"整理成需求"）。</span>
+      <div class="field">
+        <div id="chatlog-input" contenteditable="true" data-placeholder="罗宾(罗宾) 7/20 13:38:36&#10;这两个模块，能让供应链跟进人员也能看到吗？（此处可粘/拖截图）&#10;&#10;大满(大满) 7/20 13:48:22&#10;……"></div>
+        <input type="file" id="chatlog-file" accept="image/*" multiple hidden />
+        <span id="chatlog-preview" class="ps-hint"></span>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn secondary" onclick="document.getElementById('chatlog-file').click()">添加图片</button>
+        <span id="chatlog-hint" class="ps-hint" style="flex:1"></span>
+        <button class="btn secondary" onclick="closeChatlogPaste()">取消</button>
+        <button class="btn primary" id="chatlog-confirm" onclick="confirmChatlog()">插入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 沉浸式图文编辑器（写给菲菲的预检单：文字＋内联截图，图文一起发）-->
+  <div id="immersive-modal" class="overlay hidden" onclick="if(event.target===this)closeImmersiveEditor()">
+    <div class="modal editor-modal">
+      <div class="modal-title">写给菲菲 · 图文预检单</div>
+      <span class="ps-hint" style="display:block;margin-bottom:8px">逐条写下预检发现，在光标处直接粘贴 / 拖入 / 「添加图片」放截图——图文会按顺序穿插着一起发给菲菲，她能把每张图对上对应发现。删图＝在编辑区里退格。</span>
+      <div id="immersive-editor" contenteditable="true" data-placeholder="例如：&#10;1. 保存按钮点了没反应（此处粘/拖截图）&#10;2. 列表页样式错乱（此处粘/拖截图）…"></div>
+      <input type="file" id="immersive-file" accept="image/*" multiple hidden />
+      <div class="modal-foot">
+        <button type="button" class="btn secondary" onclick="document.getElementById('immersive-file').click()">添加图片</button>
+        <span id="immersive-hint" class="ps-hint" style="flex:1"></span>
+        <button type="button" class="btn secondary" onclick="closeImmersiveEditor()">取消</button>
+        <button type="button" id="immersive-send" class="btn primary" onclick="sendImmersiveEditor()">发送给菲菲</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 派工弹层 -->
+  <div id="dispatch-modal" class="overlay hidden" onclick="if(event.target===this)closeDispatch()">
+    <div class="modal">
+      <div class="modal-title">派工</div>
+      <div class="field">
+        <label>员工</label>
+        <div id="d-employees" class="emp-picker"></div>
+      </div>
+      <div class="field">
+        <label for="d-engine">执行基座</label>
+        <select id="d-engine" onchange="document.getElementById('d-model').value='';updateDispatchModelPicker()" data-testid="legacy-dispatch-engine"><option value="">跟随设置</option></select>
+        <label for="d-model">本次模型（可选）</label><input id="d-model" placeholder="使用基座默认模型">
+      </div>
+      <div class="field">
+        <label>任务档案</label>
+        <select id="d-task"><option value="">（不挂任务）</option></select>
+      </div>
+      <div class="field">
+        <label>指令</label>
+        <textarea id="d-instruction" rows="5" placeholder="例：接棒需求条目 #6，回归 cost-order 系列用例……"></textarea>
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:normal;user-select:none">
+          <input type="checkbox" id="d-guarded" style="width:auto;margin:0">
+          <span>守航态（无人值守：park 不 guess · 停发测待晨检 · 整条交接链继承）</span>
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="closeDispatch()">取消</button>
+        <button class="btn primary" id="d-submit" onclick="submitDispatch()">派工</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发起复盘会议弹层 -->
+  <div id="meeting-modal" class="overlay hidden" onclick="if(event.target===this)closeMeetingModal()">
+    <div class="modal">
+      <div class="modal-title">发起复盘会议</div>
+      <div class="field">
+        <label>议题</label>
+        <textarea id="m-topic" rows="3" placeholder="例：复盘 v5.15 踩过的坑，大家互相吐槽 + 说说想怎么改进"></textarea>
+      </div>
+      <div class="field">
+        <label>聚焦版本（可选）</label>
+        <input id="m-version" type="text" placeholder="例：v5.15（留空＝自由发挥、不限版本）" />
+      </div>
+      <div class="field">
+        <label>参会员工</label>
+        <div id="m-participants" class="emp-picker"></div>
+      </div>
+      <div class="field mt-row2">
+        <div>
+          <label>主持人</label>
+          <select id="m-chair"></select>
+        </div>
+        <div>
+          <label>轮数</label>
+          <select id="m-rounds">
+            <option value="1">1 轮</option><option value="2" selected>2 轮</option>
+            <option value="3">3 轮</option><option value="4">4 轮</option><option value="5">5 轮</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="closeMeetingModal()">取消</button>
+        <button class="btn primary" id="m-submit" onclick="submitMeeting()">开会</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文件查看弹层 -->
+  <div id="file-modal" class="overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="modal wide">
+      <div class="modal-title row">
+        <span id="file-title" class="mono"></span>
+        <button class="btn ghost" onclick="document.getElementById('file-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div id="file-body" class="md-body"></div>
+    </div>
+  </div>
+
+  <!-- 统一设置模块（顶栏齿轮打开；左导航分区：通用/推送/猪猪/企微渠道/飞书需求表/企微需求表/消息卡片）-->
+  <div id="settings-modal" class="overlay hidden" onclick="if(event.target===this)closeSettings()">
+    <div class="modal wide settings-modal">
+      <div class="modal-title row"><span>设置</span><button class="btn ghost sm" onclick="closeSettings()" title="关闭">✕</button></div>
+      <div class="settings-body">
+        <nav class="settings-nav">
+          <button class="settings-nav-item active" data-section="general" onclick="switchSettingsSection('general')">通用</button>
+          <button class="settings-nav-item" data-section="engines" onclick="switchSettingsSection('engines')">Agent 基座</button>
+          <button class="settings-nav-item" data-section="push" onclick="switchSettingsSection('push')">手机推送</button>
+          <button class="settings-nav-item" data-section="zhuzhu" onclick="switchSettingsSection('zhuzhu')">猪猪对接</button>
+          <button class="settings-nav-item" data-section="wecom" onclick="switchSettingsSection('wecom')">企微渠道</button>
+          <button class="settings-nav-item" data-section="lark" onclick="switchSettingsSection('lark')">飞书需求表</button>
+          <button class="settings-nav-item" data-section="wecomsheet" onclick="switchSettingsSection('wecomsheet')">企微镜像</button>
+          <button class="settings-nav-item" data-section="cards" onclick="switchSettingsSection('cards')">消息卡片</button>
+        </nav>
+        <div class="settings-panels">
+          <section class="settings-panel" data-section="engines">
+            <div class="field"><label for="engine-default">默认基座</label><select id="engine-default"></select></div>
+            <p class="ps-hint">新会话使用默认基座，已有会话和交接链继续使用原基座。</p>
+            <div id="engine-providers"></div>
+            <button class="btn" onclick="saveEngineConfig()" data-testid="legacy-engine-save">保存基座设置</button>
+            <p id="engine-result" role="status"></p>
+          </section>
+          <!-- 通用：主题 + 自动接棒（原顶栏两个直接开关，同 id 搬到这里，applyTheme/renderChainToggle 不变）-->
+          <section class="settings-panel active" data-section="general">
+            <div class="settings-row">
+              <div class="settings-row-label"><b>主题</b><span class="ps-hint">明暗切换</span></div>
+              <button class="btn ghost" id="theme-toggle" onclick="toggleTheme()" title="切换明暗主题">
+                <svg id="theme-icon-dark" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z" stroke-linejoin="round"/></svg>
+                <svg id="theme-icon-light" class="hidden" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="3.2"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><b>自动接棒</b><span class="ps-hint">员工写【下一棒】即自动派下一棒；关＝交接需手动接棒</span></div>
+              <button class="btn ghost" id="chain-toggle" onclick="toggleChain()" title="自动接棒" aria-label="自动接棒开关">
+                <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6.3 9.7a2.5 2.5 0 0 0 3.5 0l2-2a2.5 2.5 0 0 0-3.5-3.5l-.9.9"/><path d="M9.7 6.3a2.5 2.5 0 0 0-3.5 0l-2 2a2.5 2.5 0 0 0 3.5 3.5l.9-.9"/></svg>
+              </button>
+            </div>
+          </section>
+          <!-- 手机推送 -->
+          <section class="settings-panel" data-section="push">
+      <label class="push-switch">
+        <input type="checkbox" id="ps-enabled" />
+        <span>启用手机推送（员工停下时通知我）</span>
+      </label>
+      <div class="field">
+        <label>Bark 推送地址</label>
+        <input type="text" id="ps-barkUrl" placeholder="https://api.day.app/你的key" />
+        <span class="ps-hint">在手机 Bark App 里复制推送地址粘贴到这里；也支持自建服务器地址。</span>
+      </div>
+      <div class="field">
+        <label>推送图标地址（用员工头像作图标）</label>
+        <input type="text" id="ps-iconBase" placeholder="http://127.0.0.1:4700" />
+        <span class="ps-hint">手机能访问到的 office-lab 地址（默认＝你当前打开本页的地址）。推送图标会用对应员工的头像；留空则用 Bark 默认图标。</span>
+      </div>
+      <div class="field">
+        <label>推送时机</label>
+        <div class="ps-checks">
+          <label><input type="checkbox" id="ps-on-done" /> 收工</label>
+          <label><input type="checkbox" id="ps-on-error" /> 异常</label>
+          <label><input type="checkbox" id="ps-on-interrupted" /> 中断</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>推送范围</label>
+        <select id="ps-scope">
+          <option value="all">全部（派工 + 日常聊天）</option>
+          <option value="dispatch">仅正式派工任务</option>
+        </select>
+      </div>
+      <label class="push-switch">
+        <input type="checkbox" id="ps-aiSummary" />
+        <span>用 AI 精炼通知内容（更短更口语 · 失败自动回落原文）</span>
+      </label>
+      <div class="field">
+        <label>铃声（可选）</label>
+        <input type="text" id="ps-sound" placeholder="如 alarm / bell / minuet，留空用默认" />
+      </div>
+      <label class="push-switch">
+        <input type="checkbox" id="ps-approvalPush" />
+        <span>审批挂起 1 分钟无人处理 → 推送到手机（点通知打开审批页，可直接同意/拒绝）</span>
+      </label>
+      <div class="field">
+        <label>手机可达的 office-lab 地址（审批页链接用）</label>
+        <input type="text" id="ps-labBaseUrl" placeholder="http://127.0.0.1:4700（Tailscale IP）" />
+        <span class="ps-hint">审批通知里的链接会指向这个地址。手机走 Tailscale 时填这台机器的 Tailscale IP:4700；留空则不发审批推送。</span>
+      </div>
+      <div id="ps-result" class="ps-result hidden"></div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="testPush()">发送测试</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" onclick="savePushSettings()">保存</button>
+      </div>
+          </section>
+          <!-- 猪猪(Zhuzhu)对接 -->
+          <section class="settings-panel" data-section="zhuzhu">
+      <label class="push-switch">
+        <input type="checkbox" id="zz-enabled" />
+        <span>启用（派工时给用猪猪的员工注入「开工前读最新对接文档」提示）</span>
+      </label>
+      <div class="field">
+        <label>基地址（App Run API）</label>
+        <input type="text" id="zz-baseUrl" placeholder="http://127.0.0.1:32147" />
+        <span class="ps-hint">猪猪桌面 App Run API 基地址。调用时请保持猪猪 App 运行。</span>
+      </div>
+      <div class="field">
+        <label>被测前端地址（不是猪猪的地址）</label>
+        <input type="text" id="zz-targetBaseUrl" placeholder="http://localhost:8000" />
+        <span class="ps-hint">环境指纹（Z-B）与准入探针的前端可达检查都要它——<strong>不填就查不了「跑的是不是最新 bundle」</strong>（猪猪 <code>/env-fingerprint</code> 少这个参数直接 400）。</span>
+      </div>
+      <div class="field">
+        <label>对接文档端点（相对基地址）</label>
+        <input type="text" id="zz-docPath" placeholder="/external-integration-documents" />
+        <span class="ps-hint">员工开工前会 GET「基地址+此端点」拿<strong>当前版本最新对接协议</strong>——端点/参数/文件接口一律以线上文档为准，本页只配入口。</span>
+      </div>
+      <div class="field">
+        <label>注入对象（哪些员工派工时收到此提示）</label>
+        <div id="zz-injectFor" class="ps-checks"></div>
+        <span class="ps-hint">一般只需勾选跑 E2E 的迷糊老师。</span>
+      </div>
+      <div class="field">
+        <label>临时提醒（可选）</label>
+        <input type="text" id="zz-note" placeholder="如：今天猪猪临时在 xxx 机 / 某接口维护中" />
+        <span class="ps-hint">会附加到注入提示末尾，用于一次性叮嘱；平时留空。</span>
+      </div>
+      <div id="zz-result" class="ps-result hidden"></div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="openZhuzhuDoc()">打开对接文档</button>
+        <button class="btn secondary" onclick="testZhuzhu()">测试连通</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" onclick="saveZhuzhuSettings()">保存</button>
+      </div>
+          </section>
+          <!-- 企微渠道（菲菲对外答疑：企微 → office-lab sidecar → RAG /api/ask）-->
+          <section class="settings-panel" data-section="wecom">
+      <div id="wecom-status" class="ps-hint" style="margin-bottom:8px"></div>
+      <label class="push-switch">
+        <input type="checkbox" id="wc-enabled" />
+        <span>启用（开启且 BotID/Secret 齐全时，由 office-lab 拉起企微长连接 worker）</span>
+      </label>
+      <div class="field">
+        <label>BotID</label>
+        <input type="text" id="wc-botId" placeholder="企微智能机器人 BotID" />
+        <span class="ps-hint">企业微信管理后台创建智能机器人后获得。机器人头像请对齐菲菲。</span>
+      </div>
+      <div class="field">
+        <label>BotSecret</label>
+        <input type="password" id="wc-botSecret" placeholder="留空 = 不修改已保存的 Secret" autocomplete="new-password" />
+        <span class="ps-hint">敏感信息，保存后不回显；留空表示沿用已保存值。</span>
+      </div>
+      <div class="field">
+        <label>RAG 答题服务地址</label>
+        <input type="text" id="wc-ragApiUrl" placeholder="http://127.0.0.1:8001" />
+        <span class="ps-hint">纯答题服务基址（同机 localhost）。渠道把问题带 channel=wecom 打到 <strong>/api/ask</strong>，菲菲口吻由 RAG 服务端生效。</span>
+      </div>
+      <div class="field">
+        <label>WebSocket 地址（可选）</label>
+        <input type="text" id="wc-wsUrl" placeholder="留空 = 用 SDK 默认 wss 地址" />
+        <span class="ps-hint">一般留空。仅私有化/代理场景才填。</span>
+      </div>
+      <div class="field">
+        <label>欢迎语</label>
+        <input type="text" id="wc-welcome" placeholder="进入会话时的欢迎语" />
+      </div>
+      <div class="field">
+        <label>知识库查询管控</label>
+        <div class="field-row">
+          <label style="flex:1">每日默认查询上限
+            <input type="number" id="wc-kbDefault" min="0" step="1" placeholder="20" style="width:100%" />
+          </label>
+          <label class="push-switch" style="flex:1;align-items:flex-start">
+            <input type="checkbox" id="wc-kbWhitelist" />
+            <span>仅名单内可查（白名单）</span>
+          </label>
+        </div>
+        <span class="ps-hint">限制每个人每天调用<strong>知识库</strong>的次数（防外部人掏内部知识库、控 RAG 成本）。额度用尽后菲菲照常闲聊、只是不再查库；额度每日零点自然重置。白名单开启后，仅下方名单内的人可查。</span>
+      </div>
+      <div class="field">
+        <label>已对话用户（来自会话记录）</label>
+        <div id="wc-known-users"></div>
+        <span class="ps-hint">跟菲菲聊过的企微用户（含还没进名单的）。点「加入名单」会把该 userid 预填到下方成员名单，补好备注名/额度后点保存即可。</span>
+      </div>
+      <div class="field">
+        <label>成员名单（备注名 + 单独额度）</label>
+        <div id="wc-users"></div>
+        <button type="button" class="btn secondary" onclick="addWecomUserRow()" style="margin-top:6px">＋ 添加成员</button>
+        <span class="ps-hint">企微消息通常只给 userid（可在会话看板里看到）。配好备注名后，聊天记录和菲菲回忆里就用名字称呼（如"静安要加个筛选框"）。「每日上限」留空 = 用上面的默认值。</span>
+      </div>
+      <div id="wc-result" class="ps-result hidden"></div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="testWecom()">测试 RAG 连通</button>
+        <button class="btn secondary" onclick="testWecomConnect()">测试企微连通</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" onclick="saveWecomSettings()">保存</button>
+      </div>
+          </section>
+          <!-- 飞书需求表（示例项目需求池 · 分诊看板）-->
+          <section class="settings-panel" data-section="lark">
+      <div id="lark-status" class="ps-hint" style="margin-bottom:8px"></div>
+      <div class="field">
+        <label>App ID</label>
+        <input type="text" id="lk-appId" placeholder="飞书自建应用 app_id" />
+        <span class="ps-hint">飞书开放平台建「企业自建应用」获得；也可用环境变量 LARK_APP_ID（env 优先）。</span>
+      </div>
+      <div class="field">
+        <label>App Secret</label>
+        <input type="password" id="lk-appSecret" placeholder="留空 = 不修改已保存的 Secret" autocomplete="new-password" />
+        <span class="ps-hint">敏感信息，保存后不回显；留空表示沿用已保存值。需给应用开「多维表格记录读写」权限，并把表加为可编辑协作者。</span>
+      </div>
+      <div class="field">
+        <label>多维表 base（app_token）</label>
+        <input type="text" id="lk-appToken" placeholder="表 URL 里 /base/ 后那段" />
+      </div>
+      <div class="field">
+        <label>table_id</label>
+        <input type="text" id="lk-tableId" placeholder="表 URL 里 table= 那段" />
+      </div>
+      <div class="field">
+        <label>字段由菲菲自己决定</label>
+        <span class="ps-hint">不用配字段映射——菲菲会读这张表的现有字段，自己决定新需求填哪些字段、需要时加新字段（删/改字段名/删行她只会提建议、由你拍板）。企微快速登记也会自动把需求落成「待处理」行。点「拉取字段」可看她当前识别到的字段。</span>
+      </div>
+      <div id="lark-result" class="ps-result hidden"></div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="larkListFields()">拉取字段</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" onclick="saveLarkSettings()">保存</button>
+      </div>
+          </section>
+          <!-- 企微镜像：飞书主表 → 企微 Webhook 智能表格单向只读投影（给企微同事看）-->
+          <section class="settings-panel" data-section="wecomsheet">
+      <div id="wxm-status" class="ps-hint" style="margin-bottom:8px"></div>
+      <span class="ps-hint" style="display:block;margin-bottom:10px">把<b>飞书需求表</b>的内容单向同步到一张<b>企业微信智能表格</b>，给没有飞书的企微同事看。<b>只读镜像</b>：飞书是唯一权威、企微那张只展示、不回写。走企微智能表格的<b>「接收外部数据」Webhook</b>——不用自建应用、不用可信 IP，手动建的表也能用。</span>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="wxm-enabled" style="width:auto" /> 启用镜像同步</label>
+        <span class="ps-hint">开启后按下方频率定时同步；菲菲每次改动飞书也会即时补推一次。</span>
+      </div>
+      <div class="field">
+        <label>Webhook 地址</label>
+        <input type="password" id="wxm-webhookUrl" placeholder="留空 = 不修改已保存的地址" autocomplete="new-password" />
+        <span class="ps-hint">企微智能表格里：目标工作表菜单 →「接收外部数据」→ 复制的 Webhook 地址（形如 <code>https://qyapi.weixin.qq.com/cgi-bin/wedoc/smartsheet/webhook?key=…</code>）。<b>这是密钥、保存后不回显</b>，谁拿到都能往表里写，注意保管。</span>
+      </div>
+      <div class="field">
+        <label>同步频率（分钟）</label>
+        <input type="number" id="wxm-syncMin" min="1" placeholder="3" />
+      </div>
+      <div class="field">
+        <label>企微镜像表要建的列</label>
+        <span class="ps-hint" id="wxm-cols-hint">在企微智能表格里建同名<b>文本</b>列（照抄飞书列名，默认：需求点 / 状态 / 提出人 / 提出时间）。飞书删掉的行，企微对应行会被标「作废」（Webhook 删不了行）。</span>
+      </div>
+      <span class="ps-hint" style="display:block;margin:6px 0 0">「重置并全量重传」＝清空本地映射后按状态排序重新写入。<b>企微 Webhook 删不了行</b>——请<b>先在企业微信里手动清空镜像表</b>再重传，否则会叠加出重复行。</span>
+      <div id="wxm-result" class="ps-result hidden"></div>
+      <div class="modal-foot">
+        <button class="btn secondary" onclick="wecomMirrorSyncNow()">立即同步</button>
+        <button class="btn secondary" onclick="wecomMirrorResetNow()" title="清空本地映射并把飞书全表按状态排序重传；须先手动清空企微镜像表">重置并全量重传</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" onclick="saveWecomMirrorSettings()">保存</button>
+      </div>
+          </section>
+          <!-- 消息卡片：预览系统里所有定制卡片（迭代 OLCards.DEMO 渲染）-->
+          <section class="settings-panel" data-section="cards">
+            <span class="ps-hint" style="display:block;margin-bottom:10px">系统里所有消息卡片类型的样例预览（员工在会话里用 <code>```olcard</code> 围栏 JSON 产出）。动作卡在这里只预览、按钮不生效。协议见仓库根《消息卡片协议.md》。</span>
+            <div id="settings-cards" class="settings-cards"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="handover-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="handover-title">
+    <div class="modal">
+      <h2 id="handover-title">更换基座并接手</h2>
+      <p>停止当前执行与自动重试，保留任务、历史和协作关联。其他同事的会话不变。</p>
+      <p id="handover-current"></p>
+      <div class="field"><label for="handover-engine">接手基座</label><select id="handover-engine" onchange="document.getElementById('handover-model').value='';setupModelPicker('handover-model',this.value)"></select></div>
+      <div class="field"><label for="handover-model">本次模型（可选）</label><input id="handover-model" maxlength="200" placeholder="使用接手基座的默认模型"></div>
+      <details><summary>查看自动整理的交接摘要</summary><pre id="handover-summary" style="max-height:240px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
+      <div class="field"><label for="handover-note">补充说明（可选）</label><textarea id="handover-note" rows="3" maxlength="8000" placeholder="说明剩余工作、不要重复的操作…"></textarea></div>
+      <p id="handover-error" role="alert"></p>
+      <div class="modal-actions"><button id="handover-cancel" class="btn" onclick="closeEngineHandover()">取消</button><button id="handover-submit" class="btn primary" onclick="submitEngineHandover()">交接并继续</button></div>
+    </div>
+  </div>
+
+  <!-- 员工详情弹层 -->
+  <div id="emp-modal" class="overlay hidden" onclick="if(event.target===this)closeEmployeeDetail()">
+    <div class="modal wide" id="emp-modal-body"></div>
+  </div>
+
+  <script src="vendor/marked.min.js"></script>
+  <script src="cards.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

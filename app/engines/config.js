@@ -3,7 +3,7 @@ import path from 'node:path'
 export const ENGINE_DEFAULTS = {
   defaultEngine: 'claude',
   providers: {
-    claude: { model: 'claude-opus-5-5' },
+    claude: { model: '' },
     codex: { model: '', command: 'codex', reasoningEffort: 'medium' },
   },
 }

@@ -1,0 +1,42 @@
+{
+  "feifei": {
+    "displayName": "菲菲",
+    "title": "产品经理",
+    "emoji": "🎀",
+    "avatar": "/avatars/feifei.png",
+    "agentFile": "roles/feifei.md",
+    "roleFile": "roles/feifei.md",
+    "memoryFile": "memories/feifei.md",
+    "permissionMode": "default"
+  },
+  "ggbond": {
+    "displayName": "GG Bond",
+    "title": "全栈开发",
+    "emoji": "🐷",
+    "avatar": "/avatars/ggbond.png",
+    "agentFile": "roles/ggbond.md",
+    "roleFile": "roles/ggbond.md",
+    "memoryFile": "memories/ggbond.md",
+    "permissionMode": "default"
+  },
+  "mihu": {
+    "displayName": "迷糊老师",
+    "title": "专业 QA",
+    "emoji": "🧪",
+    "avatar": "/avatars/mihu.png",
+    "agentFile": "roles/mihu-teacher.md",
+    "roleFile": "roles/mihu-teacher.md",
+    "memoryFile": "memories/mihu-teacher.md",
+    "permissionMode": "default"
+  },
+  "bobby": {
+    "displayName": "波比",
+    "title": "DevOps",
+    "emoji": "🚀",
+    "avatar": "/avatars/bobby.png",
+    "agentFile": "roles/bobby.md",
+    "roleFile": "roles/bobby.md",
+    "memoryFile": "memories/bobby.md",
+    "permissionMode": "default"
+  }
+}

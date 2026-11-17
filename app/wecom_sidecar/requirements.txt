@@ -1,0 +1,3 @@
+# 企微渠道 sidecar 依赖。wecom-aibot-python-sdk 会连带 websockets/aiohttp/pyee/cryptography/certifi。
+wecom-aibot-python-sdk==1.0.2
+aiohttp
