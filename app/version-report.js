@@ -30,7 +30,9 @@ const cell = s => String(s == null ? '' : s).replace(/\|/g, '\\|').replace(/\n+/
 // 证据签发时刻：引擎侧 `20260826010203-1ead52` 与猪猪侧 `session-20260827-182259-…` 两种形态都要认
 const runIdTs = id => {
   const m = String(id || '').match(/(\d{4})(\d{2})(\d{2})[-_ ]?(\d{2})(\d{2})(\d{2})/)
-  return m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`) || 0 : 0
+  // Lab writes its compact run ID from toISOString(). External E2E IDs encode local time.
+  const zone = /^\d{14}-[a-f0-9]{6}$/i.test(String(id || '')) ? 'Z' : ''
+  return m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${zone}`) || 0 : 0
 }
 const reqOf = (...cands) => {
   for (const c of cands) { const m = String(c || '').match(/REQ-\d+/i); if (m) return upper(m[0]) }

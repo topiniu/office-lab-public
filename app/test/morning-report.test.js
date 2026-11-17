@@ -278,7 +278,7 @@ test('deriveItems：老板写 req-316、facet 表写 REQ-0316 —— 必须归�
 })
 test('deriveItems：park 与证据打架不静默选边（证据更晚→按证据算并点名）', () => {
   const named = { selection: { named_items: ['REQ-0316'] } }
-  const rows = [{ req: 'REQ-0316', facetId: 'REQ-0316-F1', status: 'COVERED_GREEN', green: { runId: '20260827180000-89b77c' }, redOk: true }]
+  const rows = [{ req: 'REQ-0316', facetId: 'REQ-0316-F1', status: 'COVERED_GREEN', green: { runId: '20260827100000-f4aee5' }, redOk: true }]
   const park = [{ req: 'REQ-0316', reason: '等 DDL 授权', proposal: 'x', lastAt: '2026-08-27T10:00:00+08:00' }]
   const [a] = deriveItems({ contract: named, rows, park })
   assert.equal(a.result, 'rc_ready')
@@ -291,7 +291,7 @@ test('deriveItems：park 与证据打架不静默选边（证据更晚→按证�
 test('deriveItems：猪猪的 session-20260827-182259-… 也要认出时间（只认引擎格式会让 park 永远显得更新）', () => {
   const named = { selection: { named_items: ['REQ-0316'] } }
   const rows = [{ req: 'REQ-0316', facetId: 'REQ-0316-F1', status: 'COVERED_GREEN', redOk: true, green: { runId: 'session-20260827-182259-a00d85a5-round-1' } }]
-  const [a] = deriveItems({ contract: named, rows, park: [{ req: 'REQ-0316', reason: '等授权', lastAt: '2026-08-27T10:17:55+08:00' }] })
+  const [a] = deriveItems({ contract: named, rows, park: [{ req: 'REQ-0316', reason: '等授权', lastAt: '2026-08-27T10:17:55' }] })
   assert.equal(a.result, 'rc_ready', '18:22 的证据晚于 10:17 的 park')
 })
 test('deriveItems：同一天两轮守航时，后一轮 park 的新条目不许混进前一轮的包（deadline 只拦新条目）', () => {

@@ -37,7 +37,9 @@ const ts = s => Date.parse(String(s || '').replace(' ', 'T')) || 0
 // 于是「park 和证据谁更新」永远判成 park 更新）。所以在整串里找「8 位日期 + 可选分隔 + 6 位时刻」。
 const runIdTs = id => {
   const m = String(id || '').match(/(\d{4})(\d{2})(\d{2})[-_ ]?(\d{2})(\d{2})(\d{2})/)
-  return m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`) || 0 : 0
+  // Lab writes its compact run ID from toISOString(). External E2E IDs encode local time.
+  const zone = /^\d{14}-[a-f0-9]{6}$/i.test(String(id || '')) ? 'Z' : ''
+  return m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${zone}`) || 0 : 0
 }
 export function deriveItems({ contract = {}, ledger = null, park = [], rows = [], agentItems = [], startedAt = '', endedAt = '' } = {}) {
   const items = new Map()

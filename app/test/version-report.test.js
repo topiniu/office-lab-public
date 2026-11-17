@@ -30,8 +30,8 @@ const ROUND = (runName, named, starts, ends, ledger = {}) => ({
   ledger: { forbidden: [], overBudget: [], fakeGreen: { count: 0 }, usage: {}, gateDecisions: {}, itemResults: {}, ...ledger },
 })
 const ROUNDS = [
-  ROUND('2026-08-27-guarded-01', ['req-316', 'req-317'], '2026-08-27T09:55:17+08:00', '2026-08-27T18:30:22+08:00'),
-  ROUND('2026-08-27-guarded-02', ['REQ-0313', 'REQ-0318'], '2026-08-27T18:30:22+08:00', '2026-08-28T08:00:00+08:00',
+  ROUND('2026-08-27-guarded-01', ['req-316', 'req-317'], '2026-08-27T09:55:17', '2026-08-27T18:30:22'),
+  ROUND('2026-08-27-guarded-02', ['REQ-0313', 'REQ-0318'], '2026-08-27T18:30:22', '2026-08-28T08:00:00',
     { gateDecisions: { 'REQ-0318': { item: 'REQ-0318', riskClass: 'low' } }, forbidden: [{ tool: 'x' }], usage: { tokens: 36985188 } }),
 ]
 
