@@ -1,0 +1,401 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 语义 token 与旧 UI（app/public，Linear 设计系统）对齐：
+   近黑画布 #010102 + 四级 surface 阶梯 + 发丝线 + 单强调色薰衣草 #5e6ad2 + 圆角 0.625rem + Inter。
+   刻意用 hex/rgba（不用 oklch/color-mix），与旧 UI 一致、避免注释/解析踩坑。 */
+@theme inline {
+    --font-heading: var(--font-sans);
+    /* 中文字体（老板 2026-10-21：「字体和排版都不好看」）。西文/数字仍走 Inter（中文字体自带的西文字形偏弱，
+       故西文在前、中文在后——中文字体里也有西文，排前面 Inter 就永远轮不上）。
+       中文优先级：苹方（Mac/iPhone 原生）→ 思源黑体 Noto Sans SC（Win11 自带可选字体，本机已装）→ 微软雅黑 UI 兜底。
+       旧栈的问题：Windows 上中文全落到微软雅黑——它没有 OpenType 标点半宽特性，下面的 text-spacing-trim 对它无效，
+       「」。（）连排时中间漏一个全角空洞；笔画也比 Inter 粗重，中西混排一行像两种字号。
+       去掉了 'SF Pro Display'（Display 光学尺寸是给 20px+ 大标题的，用在 14px 正文反而松散）和 system-ui
+       （中文 Windows 上它会先把汉字抢给雅黑，思源永远轮不到）。 */
+    --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        'PingFang SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 12px);
+    --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* 聊天停靠栏（第三栏）当前宽度。未停靠即 0，外壳 SidebarInset 的 pe- 便不占位。
+   由 hooks/use-dock.ts 的 applyDockVar 写到 documentElement 上（拖宽时逐帧直写、不走 React）。
+   放在 :root 之外单独声明，是为了让它不被主题切换那两组变量牵连。 */
+:root {
+    --ol-dock-w: 0px;
+}
+
+/* 浅色（对齐旧 UI [data-theme="light"]） */
+:root {
+    --radius: 0.625rem;
+    --background: #ffffff;
+    --foreground: #1b1c1e;
+    --card: #ffffff;
+    --card-foreground: #1b1c1e;
+    --popover: #ffffff;
+    --popover-foreground: #1b1c1e;
+    --primary: #5e6ad2;
+    --primary-foreground: #ffffff;
+    --secondary: #eeeff1;
+    --secondary-foreground: #1b1c1e;
+    --muted: #f5f6f6;
+    --muted-foreground: #6f7683;
+    --accent: #eeeff1;
+    --accent-foreground: #1b1c1e;
+    --destructive: #e5484d;
+    --border: #e4e5e8;
+    --input: #d0d3d8;
+    --ring: #5e6ad2;
+    --chart-1: #5e6ad2;
+    --chart-2: #7c8bff;
+    --chart-3: #4f5abf;
+    --chart-4: #9aa6ff;
+    --chart-5: #3a4498;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #1b1c1e;
+    --sidebar-primary: #5e6ad2;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eeeff1;
+    --sidebar-accent-foreground: #1b1c1e;
+    --sidebar-border: #e4e5e8;
+    --sidebar-ring: #5e6ad2;
+}
+
+/* 深色（对齐旧 UI 默认 :root：近黑画布 + surface 阶梯 + 发丝线 + 薰衣草） */
+.dark {
+    --background: #010102;
+    --foreground: #f7f8f8;
+    --card: #141516;
+    --card-foreground: #f7f8f8;
+    --popover: #18191a;
+    --popover-foreground: #f7f8f8;
+    --primary: #5e6ad2;
+    --primary-foreground: #ffffff;
+    --secondary: #141516;
+    --secondary-foreground: #f7f8f8;
+    --muted: #0f1011;
+    --muted-foreground: #8a8f98;
+    --accent: #18191a;
+    --accent-foreground: #f7f8f8;
+    --destructive: #e5484d;
+    --border: #23252a;
+    --input: #34343a;
+    --ring: #5e6ad2;
+    --chart-1: #5e6ad2;
+    --chart-2: #7c8bff;
+    --chart-3: #9aa6ff;
+    --chart-4: #4f5abf;
+    --chart-5: #3a4498;
+    --sidebar: #010102;
+    --sidebar-foreground: #f7f8f8;
+    --sidebar-primary: #5e6ad2;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #141516;
+    --sidebar-accent-foreground: #f7f8f8;
+    --sidebar-border: #23252a;
+    --sidebar-ring: #5e6ad2;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+    /* 中文排版两件套（W3C clreq 的 CSS 落地，Chrome/Edge 已全支持）：
+       text-autospace —— 汉字与西文/数字之间自动留 1/8em「盘古之白」，不用手打空格（已有空格处不重复加）；
+       text-spacing-trim —— 连排的全角标点挤成半宽（「」。→ 不再漏洞），需字体带 halt/chws 特性，思源/苹方都有。 */
+    text-autospace: normal;
+    text-spacing-trim: normal;
+  }
+}
+
+/* 员工「工作中」状态徽标里的三点跳动动画（对齐旧 UI app/public .st-dots） */
+.emp-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.emp-dots i {
+  display: block;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 9999px;
+  background: #fff;
+  animation: emp-dot 0.6s linear infinite;
+}
+.emp-dots i:nth-child(1) { animation-delay: 0.1s; }
+.emp-dots i:nth-child(2) { animation-delay: 0.2s; }
+.emp-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes emp-dot {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(2px); }
+}
+
+/* ===== 小呆呆巡检雷达（移植旧 UI app/public 的 .patrol-aura / .patrol-ripple）=====
+   语义：光从他头像发起、向四周散开，读作「光是他发的」。三态——
+     idle   在岗待机：小涟漪只在头像周围淡淡泛开 + 光环 11s 一次「发起/收回」的双亮
+     active 正在巡查：大波洗过整个员工面板 + 光环 1.6s 快呼吸
+     off    打烊：整个雷达不渲染（组件层直接返回 null）
+   涟漪节奏沿用旧 UI 的取舍：长尾 cubic-bezier = 冲出去后强烈减速，比匀速更像真水波。
+   颜色改走 --primary 语义 token（旧 UI 写死 #6b8afd；本 UI 全站薰衣草 primary，见 CLAUDE.md「别写死颜色」）。
+   ★ 挂载点必须在 SidebarMenuItem（relative）而非 SidebarMenuButton——后者带 overflow-hidden，
+     大波会被裁成行内弧线，「洗过面板」的意图就没了。 */
+.patrol-aura {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 transparent;
+}
+.patrol-ripple {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.patrol-ripple i {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 70%, transparent);
+  opacity: 0;
+}
+/* 巡逻倒计时（在岗待命，什么都没在干）：**不放涟漪**，只留极慢的光环呼吸。
+   为什么不放：涟漪 = 「有动作」的语言。倒计时期间引擎其实一动不动（下一跳定时扫描还没到），
+   一直冒波会让人误以为他在忙——老板 2026-08-20 的原话是「状态完全跟实际动作对不上」。 */
+[data-phase='countdown'] .patrol-ripple { display: none; }
+[data-phase='countdown'] .patrol-aura { animation: patrol-aura-idle 11s ease-in-out infinite; }
+/* 巡逻中（刚扫过一轮）：单独一道快波扫出去 + 光环闪一下。
+   引擎那次扫描是微秒级的，这 1.6s 是「刚扫过」的**回执**，不是「持续在扫」——所以只放一道波、不循环。 */
+[data-phase='sweeping'] .patrol-ripple i:nth-child(1) { animation: patrol-ripple-sweep 1.6s cubic-bezier(0.11, 0.66, 0.24, 1) 1 both; }
+[data-phase='sweeping'] .patrol-ripple i:nth-child(2),
+[data-phase='sweeping'] .patrol-ripple i:nth-child(3) { display: none; }
+[data-phase='sweeping'] .patrol-aura { animation: patrol-aura-active 1.6s ease-in-out 1 both; }
+/* 处置中（真派出去了、他有在跑的 run）：大波连绵洗过整个员工面板（scale→12），三波错开 1.47s */
+[data-phase='handling'] .patrol-ripple i { animation: patrol-ripple-wide 4.4s cubic-bezier(0.11, 0.66, 0.24, 1) infinite; }
+[data-phase='handling'] .patrol-ripple i:nth-child(2) { animation-delay: 1.47s; }
+[data-phase='handling'] .patrol-ripple i:nth-child(3) { animation-delay: 2.94s; }
+[data-phase='handling'] .patrol-aura { animation: patrol-aura-active 1.6s ease-in-out infinite; }
+@keyframes patrol-ripple-idle {
+  0% { transform: scale(0.35); opacity: 0; }
+  14% { opacity: 0.34; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes patrol-ripple-wide {
+  0% { transform: scale(0.35); opacity: 0; }
+  9% { opacity: 0.5; }
+  100% { transform: scale(12); opacity: 0; }
+}
+/* 巡逻中的单道波：比处置中的大波更快更短、扫得更远一点起势也更急（读作「扫一眼」而非「驻场处置」） */
+@keyframes patrol-ripple-sweep {
+  0% { transform: scale(0.35); opacity: 0; }
+  12% { opacity: 0.55; }
+  100% { transform: scale(9); opacity: 0; }
+}
+@keyframes patrol-aura-idle {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  3% { box-shadow: 0 0 11px 2px color-mix(in srgb, var(--primary) 55%, transparent); }
+  15% { box-shadow: 0 0 5px 1px color-mix(in srgb, var(--primary) 22%, transparent); }
+  28% { box-shadow: 0 0 11px 2px color-mix(in srgb, var(--primary) 55%, transparent); }
+  34% { box-shadow: 0 0 0 0 transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes patrol-aura-active {
+  0%, 100% { box-shadow: 0 0 4px 1px color-mix(in srgb, var(--primary) 30%, transparent); }
+  50% { box-shadow: 0 0 13px 3px color-mix(in srgb, var(--primary) 60%, transparent); }
+}
+/* 无障碍：减少动态偏好下只留一圈静态光环表达「在岗/巡查」，不做扩散动画 */
+@media (prefers-reduced-motion: reduce) {
+  .patrol-ripple { display: none; }
+  [data-phase='countdown'] .patrol-aura,
+  [data-phase='sweeping'] .patrol-aura,
+  [data-phase='handling'] .patrol-aura {
+    animation: none;
+    box-shadow: 0 0 6px 1px color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+}
+
+/* 长列表逐块跳过离屏布局/绘制：侧栏折叠动画(改 width→整页 reflow)与滚动时都更顺滑。
+   content-visibility:auto 让离屏块不参与布局；contain-intrinsic-size 提供占位估高(auto 会缓存真实高度)。 */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
+/* 「正在处理」打字气泡：三点跳动（对齐旧 UI 后台活动的 loading 气泡） */
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.typing-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--muted-foreground);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dots i:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 0.9; transform: translateY(-2px); }
+}
+
+/* 消息入场：新气泡/事件淡入 + 轻微上滑（只在挂载时触发一次，历史行不重放） */
+@keyframes ol-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.ol-msg-in { animation: ol-msg-in 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .ol-msg-in { animation: none; }
+}
+
+/* 聊天窗出现/隐藏（FloatingCard）：迅捷——进 160ms 减速曲线、出 120ms 加速曲线（出要比进快，不拖泥带水）。
+   用独立的 scale/translate 属性而不是 transform：拖动时 FloatingCard 逐帧往 style.transform 写位移，两者互不覆盖。
+   退场时长须与 floating-card.tsx 的 OUT_MS 一致（播完才卸载）。 */
+@keyframes ol-card-f-in { from { opacity: 0; scale: 0.96; translate: 0 8px; } }
+@keyframes ol-card-f-out { to { opacity: 0; scale: 0.96; translate: 0 8px; } }
+@keyframes ol-card-d-in { from { opacity: 0; translate: 24px 0; } }
+@keyframes ol-card-d-out { to { opacity: 0; translate: 24px 0; } }
+@keyframes ol-card-m-in { from { opacity: 0.4; translate: 32% 0; } }
+@keyframes ol-card-m-out { to { opacity: 0; translate: 32% 0; } }
+.ol-card--f { animation: ol-card-f-in 0.16s cubic-bezier(0.22, 1, 0.36, 1); }
+.ol-card--d { animation: ol-card-d-in 0.16s cubic-bezier(0.22, 1, 0.36, 1); }
+.ol-card--m { animation: ol-card-m-in 0.18s cubic-bezier(0.22, 1, 0.36, 1); }
+.ol-card[data-closing] { pointer-events: none; animation-duration: 0.12s; animation-timing-function: cubic-bezier(0.4, 0, 1, 1); animation-fill-mode: forwards; }
+.ol-card--f[data-closing] { animation-name: ol-card-f-out; }
+.ol-card--d[data-closing] { animation-name: ol-card-d-out; }
+.ol-card--m[data-closing] { animation-name: ol-card-m-out; }
+@media (prefers-reduced-motion: reduce) {
+  .ol-card, .ol-card[data-closing] { animation: none; }
+}
+
+/* 横向滚动条藏起来但保留滑动（移动端的分段导航/标签条：手指直接划，露一条系统滚动条纯属噪声）。
+   桌面端这些条本来也能用滚轮/拖拽，不靠可见滚动条。 */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== 移动端（<768px，与 hooks/use-mobile.ts 的 MOBILE_BREAKPOINT 同一个数）触屏适配 =====
+   全站的「移动 vs 桌面」结构切换统一压在 768：JS 那侧（FAB / 聊天全屏页 / 停靠禁用）用的就是它，
+   布局若改用 Tailwind 默认的 sm(640) 断点，640~767 的机型会拿到「移动外壳 + 桌面排版」的杂交态。 */
+@media (max-width: 767px) {
+  /* 表单控件字号 ≥16px，避免 iOS Safari 聚焦时自动放大整页（近原生 IM 输入体验）。 */
+  input,
+  textarea,
+  select,
+  [contenteditable] {
+    font-size: 16px;
+  }
+  /* 点按不留灰块（Android WebView / iOS 默认的 tap 高亮跟我们自己的 active 态打架） */
+  a,
+  button,
+  [role='button'],
+  label {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 导航抽屉里的行加高到 44px：h-8(32px) 是给鼠标的尺寸，手指按这排「任务/运行观测/员工…」
+     很容易点到邻行。只改抽屉内（data-mobile=true），桌面侧栏那份紧凑度不动。 */
+  [data-mobile='true'] [data-sidebar='menu-button'] {
+    min-height: 2.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* 移动端聊天页：进入时隐藏应用外壳，让聊天成为独占视口的真正「页」——
+   背后无任何内容可透出，从根上消除 iOS 软键盘顶飞时露出看板的问题。 */
+html.ol-chat-page .ol-app-shell {
+  display: none !important;
+}
+
+/* 聊天窗会话抽屉（session-drawer.tsx）：滑入 + 在跑会话卡片的流动描边（方便一眼定位活动会话） */
+@property --ol-live-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes ol-live-spin {
+  to { --ol-live-angle: 360deg; }
+}
+@keyframes ol-drawer-in {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ol-drawer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ol-drawer-in { animation: ol-drawer-in 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
+.ol-drawer-fade { animation: ol-drawer-fade 0.2s ease-out; }
+.ol-live-card { position: relative; }
+.ol-live-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--ol-live-angle), transparent 0% 55%, var(--primary) 78%, transparent 96%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ol-live-spin 2.6s linear infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ol-drawer-in, .ol-drawer-fade { animation: none; }
+  .ol-live-card::before { animation: none; background: var(--primary); opacity: 0.5; }
+}
