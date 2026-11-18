@@ -1,0 +1,610 @@
+{
+  "baselineVersion": 1,
+  "module": "示例项目",
+  "sampleCount": 15,
+  "pages": [],
+  "runIds": [
+    "20260907-211315-652-session-20260907-211214-a3f764c9-round-1-sweep-pricing-board",
+    "20260907-211336-569-session-20260907-211214-a3f764c9-round-1-sweep-cj-spu-board",
+    "20260907-211357-310-session-20260907-211214-a3f764c9-round-1-sweep-completed-board",
+    "20260907-211417-002-session-20260907-211214-a3f764c9-round-1-sweep-review-assign-board",
+    "20260907-184051-194-session-20260907-184051-d7984874-round-1-vis-01-search-btn-baseline",
+    "20260907-184112-138-session-20260907-184051-d7984874-round-1-vis-02-reset-btn-baseline",
+    "20260907-184132-390-session-20260907-184051-d7984874-round-1-vis-03-filter-buttons-peers",
+    "20260907-184153-464-session-20260907-184051-d7984874-round-1-vis-04-board-table-layout-baseline"
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "byClass": {
+    "primary-btn": {
+      "label": "筛选区主按钮",
+      "n": 5,
+      "selectors": [
+        "[data-testid=\"sampling-pricing-board-search-btn\"]",
+        "[data-testid=\"sampling-cj-spu-board-search-btn\"]",
+        "[data-testid=\"sampling-completed-board-search-btn\"]",
+        "[data-testid=\"sampling-review-assign-board-search-btn\"]",
+        "[data-testid=\"sampling-supply-chain-board-search-btn\"]"
+      ],
+      "tokens": {
+        "fontSize": {
+          "value": 14,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 14,
+              "count": 5
+            }
+          ]
+        },
+        "fontWeight": {
+          "value": "400",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "400",
+              "count": 5
+            }
+          ]
+        },
+        "lineHeight": {
+          "value": 22,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 22,
+              "count": 5
+            }
+          ]
+        },
+        "fontFamily": {
+          "value": "-apple-system",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "-apple-system",
+              "count": 5
+            }
+          ]
+        },
+        "borderRadius": {
+          "value": 2,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 2,
+              "count": 5
+            }
+          ]
+        },
+        "borderWidth": {
+          "value": 1,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 1,
+              "count": 5
+            }
+          ]
+        },
+        "paddingTop": {
+          "value": 4,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 4,
+              "count": 5
+            }
+          ]
+        },
+        "paddingRight": {
+          "value": 15,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 15,
+              "count": 5
+            }
+          ]
+        },
+        "paddingBottom": {
+          "value": 4,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 4,
+              "count": 5
+            }
+          ]
+        },
+        "paddingLeft": {
+          "value": 15,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 15,
+              "count": 5
+            }
+          ]
+        }
+      }
+    },
+    "secondary-btn": {
+      "label": "筛选区次按钮",
+      "n": 5,
+      "selectors": [
+        "[data-testid=\"sampling-pricing-board-reset-btn\"]",
+        "[data-testid=\"sampling-cj-spu-board-reset-btn\"]",
+        "[data-testid=\"sampling-completed-board-reset-btn\"]",
+        "[data-testid=\"sampling-review-assign-board-reset-btn\"]",
+        "[data-testid=\"sampling-supply-chain-board-reset-btn\"]"
+      ],
+      "tokens": {
+        "fontSize": {
+          "value": 14,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 14,
+              "count": 5
+            }
+          ]
+        },
+        "fontWeight": {
+          "value": "400",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "400",
+              "count": 5
+            }
+          ]
+        },
+        "lineHeight": {
+          "value": 22,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 22,
+              "count": 5
+            }
+          ]
+        },
+        "fontFamily": {
+          "value": "-apple-system",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "-apple-system",
+              "count": 5
+            }
+          ]
+        },
+        "borderRadius": {
+          "value": 2,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 2,
+              "count": 5
+            }
+          ]
+        },
+        "borderWidth": {
+          "value": 1,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 1,
+              "count": 5
+            }
+          ]
+        },
+        "paddingTop": {
+          "value": 4,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 4,
+              "count": 5
+            }
+          ]
+        },
+        "paddingRight": {
+          "value": 15,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 15,
+              "count": 5
+            }
+          ]
+        },
+        "paddingBottom": {
+          "value": 4,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 4,
+              "count": 5
+            }
+          ]
+        },
+        "paddingLeft": {
+          "value": 15,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 15,
+              "count": 5
+            }
+          ]
+        }
+      }
+    },
+    "table": {
+      "label": "表格",
+      "n": 5,
+      "selectors": [
+        "[data-testid=\"sampling-pricing-board-table\"]",
+        "[data-testid=\"sampling-cj-spu-board-table\"]",
+        "[data-testid=\"sampling-completed-board-table\"]",
+        "[data-testid=\"sampling-review-assign-board-table\"]",
+        "[data-testid=\"sampling-supply-chain-board-table\"]"
+      ],
+      "tokens": {
+        "fontSize": {
+          "value": 14,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 14,
+              "count": 5
+            }
+          ]
+        },
+        "fontWeight": {
+          "value": "400",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "400",
+              "count": 5
+            }
+          ]
+        },
+        "lineHeight": {
+          "value": 22,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 22,
+              "count": 5
+            }
+          ]
+        },
+        "fontFamily": {
+          "value": "-apple-system",
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": "-apple-system",
+              "count": 5
+            }
+          ]
+        },
+        "borderRadius": {
+          "value": 0,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 5
+            }
+          ]
+        },
+        "borderWidth": {
+          "value": 0,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 5
+            }
+          ]
+        },
+        "paddingTop": {
+          "value": 0,
+          "count": 4,
+          "total": 5,
+          "share": 0.8,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 4
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ]
+        },
+        "paddingRight": {
+          "value": 0,
+          "count": 4,
+          "total": 5,
+          "share": 0.8,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 4
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ]
+        },
+        "paddingBottom": {
+          "value": 0,
+          "count": 5,
+          "total": 5,
+          "share": 1,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 5
+            }
+          ]
+        },
+        "paddingLeft": {
+          "value": 0,
+          "count": 4,
+          "total": 5,
+          "share": 0.8,
+          "histogram": [
+            {
+              "value": 0,
+              "count": 4
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "scales": {
+    "fontSize": {
+      "values": [
+        {
+          "value": 14,
+          "count": 15
+        }
+      ],
+      "scale": [
+        14
+      ]
+    },
+    "borderRadius": {
+      "values": [
+        {
+          "value": 0,
+          "count": 5
+        },
+        {
+          "value": 2,
+          "count": 10
+        }
+      ],
+      "scale": [
+        0,
+        2
+      ]
+    },
+    "paddingTop": {
+      "values": [
+        {
+          "value": 0,
+          "count": 4
+        },
+        {
+          "value": 4,
+          "count": 10
+        },
+        {
+          "value": 8,
+          "count": 1
+        }
+      ],
+      "scale": [
+        0,
+        4
+      ]
+    },
+    "paddingRight": {
+      "values": [
+        {
+          "value": 0,
+          "count": 4
+        },
+        {
+          "value": 8,
+          "count": 1
+        },
+        {
+          "value": 15,
+          "count": 10
+        }
+      ],
+      "scale": [
+        0,
+        15
+      ]
+    },
+    "paddingBottom": {
+      "values": [
+        {
+          "value": 0,
+          "count": 5
+        },
+        {
+          "value": 4,
+          "count": 10
+        }
+      ],
+      "scale": [
+        0,
+        4
+      ]
+    },
+    "paddingLeft": {
+      "values": [
+        {
+          "value": 0,
+          "count": 4
+        },
+        {
+          "value": 8,
+          "count": 1
+        },
+        {
+          "value": 15,
+          "count": 10
+        }
+      ],
+      "scale": [
+        0,
+        15
+      ]
+    },
+    "marginTop": {
+      "values": [
+        {
+          "value": 0,
+          "count": 15
+        }
+      ],
+      "scale": [
+        0
+      ]
+    },
+    "marginBottom": {
+      "values": [
+        {
+          "value": 0,
+          "count": 15
+        }
+      ],
+      "scale": [
+        0
+      ]
+    }
+  },
+  "colors": {
+    "color": [
+      {
+        "value": "rgba(0, 0, 0, 0.85)",
+        "count": 10
+      },
+      {
+        "value": "rgb(255, 255, 255)",
+        "count": 5
+      }
+    ],
+    "backgroundColor": [
+      {
+        "value": "rgb(255, 255, 255)",
+        "count": 9
+      },
+      {
+        "value": "rgb(64, 169, 255)",
+        "count": 4
+      },
+      {
+        "value": "rgb(24, 144, 255)",
+        "count": 1
+      },
+      {
+        "value": "rgba(0, 0, 0, 0)",
+        "count": 1
+      }
+    ],
+    "borderColor": [
+      {
+        "value": "rgb(217, 217, 217)",
+        "count": 5
+      },
+      {
+        "value": "rgba(0, 0, 0, 0.85)",
+        "count": 5
+      },
+      {
+        "value": "rgb(64, 169, 255)",
+        "count": 4
+      },
+      {
+        "value": "rgb(24, 144, 255)",
+        "count": 1
+      }
+    ]
+  },
+  "note": "标准 = 示例项目模块自己：同类元素的规范值由「模块里多数同类元素是什么」数出来，不是谁拍的阈值。样本越多越可信；sampleCount 小的时候结论要当线索、不当判决。",
+  "generatedAt": "2026-09-07T13:15:40.546Z"
+}

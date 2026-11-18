@@ -1,14 +1,51 @@
+# 依赖
 node_modules/
-web/dist/
-.DS_Store
+
+# 运行时数据 / 日志(含对话 transcript、上传文件、猪猪对接/推送配置等,不入库)
+# app/runs/
+# app/uploads/
+run-server.log
 *.log
-.env
-.env.*
+
+# 工具产生的临时 git worktree（EnterWorktree 等），不入库
+.claude/worktrees/
+
+# 悬浮窗 WebView2：运行时按进程位数从 WebView2Loader.<arch>.dll 复制生成，不入库（仓库只留 arch 源文件）
+tray/vendor/webview2/WebView2Loader.dll
+
+# 独立部署形态下 BACKEND_LOG_DIR = <工作区根>/run/logs 会落进仓库（嵌套形态时它在 monorepo 顶层、本就在库外）
+/run/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+
+# 调试/临时残渣（下划线前缀脚本、猪猪 E2E 调试产物、Playwright MCP 控制台日志等，不入库）
+_*.js
+_*.txt
+_bak_*/
+.playwright-mcp/
+
+# 引擎调试导出（`/api/runs` 全量 dump 等，MB 级、含会话正文）与 atomicWrite 崩溃残留的临时文件
+run-dump.json
+*.tmp-??????
+
+# 本地临时目录 / 调试残渣（发版前后快照、协议 schema、调试截图等，.tmp/ 动辄数 GB）
+.tmp/
+app/.tmp/
+.itagent/
+app/dbg-*.mjs
+.playwright-iso.png
+card-*-after.png
+paste-chip.png
+
+# Per-installation data and credentials
 /tasks/*
 /memories/*
-/run/
 /app/runs/
 /app/uploads/
 /templates/uploads/
-/.claude/settings.local.json
-/.tmp/
+web/dist/
+.env
+.env.*
+.claude/settings.local.json

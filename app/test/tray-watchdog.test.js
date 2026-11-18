@@ -10,7 +10,17 @@ import {
 const WIN = { platform: 'win32', enabled: true, sawTrayAlive: true }
 
 // ---------- 跨语言契约 ----------
-
+test('mutex 名与 tray/office-lab-tray.ps1 里的字面量必须一致（跨语言隐藏契约，改名要两处同改）', async () => {
+  const fs = await import('node:fs')
+  const url = await import('node:url')
+  const path = await import('node:path')
+  const here = path.dirname(url.fileURLToPath(import.meta.url))
+  const ps = fs.readFileSync(path.join(here, '..', '..', 'tray', 'office-lab-tray.ps1'), 'utf8')
+  assert.ok(ps.includes(`'${TRAY_MUTEX_NAME}'`), `托盘脚本里找不到 mutex 名 ${TRAY_MUTEX_NAME}`)
+  // 托盘里应当有两处用到它：权威 mutex 抢占 + 引导阶段 OpenExisting 快速判活
+  const hits = ps.split(TRAY_MUTEX_NAME).length - 1
+  assert.ok(hits >= 2, `托盘脚本里 mutex 名只出现 ${hits} 次，预期 >=2（抢占 + 判活）`)
+})
 
 // ---------- 判活探针 ----------
 test('探针脚本用 OpenExisting、带 -NoProfile/-NonInteractive、且不枚举进程（§3.130 的自匹配坑）', () => {

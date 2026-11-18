@@ -26,7 +26,7 @@ test('契约 yaml 的 goal 块能被解析（两级 map）', () => {
 
 test('09-18 guarded-01 的形状：点名 3 条只做完 1 条 → 判「还没干完」并派人，而不是收工', () => {
   const l = L()
-  l.itemResults = { 'REQ-0342': { result: 'rc_ready' }, 'REQ-0352': { result: 'parked', stopWhy: 'A/B 样式待罗宾定' }, 'REQ-0353': { result: 'parked', stopWhy: '超 max_changed_repositories:2' } }
+  l.itemResults = { 'REQ-0342': { result: 'rc_ready' }, 'REQ-0352': { result: 'parked', stopWhy: 'A/B 样式待业务同事乙定' }, 'REQ-0353': { result: 'parked', stopWhy: '超 max_changed_repositories:2' } }
   fullCard(l, 'REQ-0342')
   const ev = goal.evaluateGoal({ contract: named(['REQ-0342', 'REQ-0352', 'REQ-0353']), ledger: l, mode: 'active' })
   assert.equal(ev.verdict, 'continue')
@@ -174,8 +174,8 @@ test('审查发现 #1：打回后返工重新走到终点、卡也齐 → 能判
 
 test('审查发现 #3：park 重复调用只留一件高危；正式 raise_risk 会顶掉 park 自动生成的那件', () => {
   const l = L()
-  card.raiseRisk(l, { req: 'REQ-0001', what: '口径 A/B', why: '要罗宾定', options: ['A', '先不做'], source: 'park' })
-  card.raiseRisk(l, { req: 'REQ-0001', what: '口径 A/B（更新理由）', why: '要罗宾定', options: ['A', '先不做'], source: 'park' })
+  card.raiseRisk(l, { req: 'REQ-0001', what: '口径 A/B', why: '要业务同事乙定', options: ['A', '先不做'], source: 'park' })
+  card.raiseRisk(l, { req: 'REQ-0001', what: '口径 A/B（更新理由）', why: '要业务同事乙定', options: ['A', '先不做'], source: 'park' })
   assert.equal(l.risks.filter(r => r.status === 'open').length, 1)
   card.raiseRisk(l, { req: 'REQ-0001', what: '要改线上表结构', why: '加列', options: ['照做'] })
   assert.deepEqual(l.risks.map(r => r.status), ['superseded', 'open'])

@@ -280,7 +280,7 @@ function codeLockDeny() {
   const deny = []
   for (const t of WRITE_TOOLS) for (const r of CODE_ROOTS) {
     deny.push(`${t}(./${r}/**)`)
-    deny.push(`${t}(/${path.join(ROOT, r)}/**)`)   // 前置 / → `//Users/...`（双斜杠=绝对）
+    deny.push(`${t}(/${path.join(ROOT, r)}/**)`)   // 前置 / → `//Users/example`（双斜杠=绝对）
   }
   return deny
 }
@@ -436,8 +436,8 @@ function resolveEmployeeKey(raw) {
 
 // 端口：引擎 API + 旧 UI（app/public）默认 4800（新 shadcn UI 让到 4700）；仍可用 OFFICE_LAB_PORT 覆盖
 const PORT = Number(process.env.OFFICE_LAB_PORT || 4800)
-// 工作台监听回环地址，供本机浏览器访问。
-const HOST = '127.0.0.1'
+// 监听地址：默认 0.0.0.0（所有网卡，含 Tailscale/局域网可访问）；设 OFFICE_LAB_HOST=127.0.0.1 可锁回仅本机
+const HOST = process.env.OFFICE_LAB_HOST || '0.0.0.0'
 
 fs.mkdirSync(RUNS_DIR, { recursive: true })
 fs.mkdirSync(UPLOADS_DIR, { recursive: true })
@@ -540,11 +540,10 @@ const savePushConfig = () => fs.writeFileSync(PUSH_CONFIG_FILE, JSON.stringify(p
 
 // ---------- 自动接棒配置（持久化 runs/chain-config.json；混合扳机：无拍板则自动派下一棒，有拍板则停） ----------
 const CHAIN_CONFIG_FILE = path.join(RUNS_DIR, 'chain-config.json')
-let chainConfig = { enabled: true, maxDepth: 20, selfChainMax: 40, patrolEnabled: false, patrolMax: 6, patrolSweepMin: 6, patrolGraceSec: 8, auditEnabled: false, auditMax: 3, bootResumeMax: 10, bootResumeBackoff: true }   // bootResumeMax/bootResumeBackoff：引擎重启后自动接回被打断会话的次数上限 + 指数退避开关（见 resumeInterruptedAfterBoot）；selfChainMax：自续轮数上限；patrolEnabled/patrolMax：空停巡查开关 + 同一会话被巡视续跑次数上限；patrolSweepMin：定时巡逻间隔(分钟)，可在小呆呆头像弹窗改、即时生效；patrolGraceSec：聊天会话空停的「接管宽限窗」秒数(0=关、退回即时派)，老板可在窗口内回话/点取消撤销；auditEnabled/auditMax：教导主任(菲斯拉)审计迷糊 QA 结论的开关 + 同一结论被打回重审次数上限（达上限强制升级老板，不无限 ping-pong）
+let chainConfig = { enabled: true, maxDepth: 20, selfChainMax: 40, patrolEnabled: true, patrolMax: 6, patrolSweepMin: 6, patrolGraceSec: 8, auditEnabled: true, auditMax: 3, bootResumeMax: 10, bootResumeBackoff: true }   // bootResumeMax/bootResumeBackoff：引擎重启后自动接回被打断会话的次数上限 + 指数退避开关（见 resumeInterruptedAfterBoot）；selfChainMax：自续轮数上限；patrolEnabled/patrolMax：空停巡查开关 + 同一会话被巡视续跑次数上限；patrolSweepMin：定时巡逻间隔(分钟)，可在小呆呆头像弹窗改、即时生效；patrolGraceSec：聊天会话空停的「接管宽限窗」秒数(0=关、退回即时派)，老板可在窗口内回话/点取消撤销；auditEnabled/auditMax：教导主任(菲斯拉)审计迷糊 QA 结论的开关 + 同一结论被打回重审次数上限（达上限强制升级老板，不无限 ping-pong）
 try { chainConfig = { ...chainConfig, ...JSON.parse(fs.readFileSync(CHAIN_CONFIG_FILE, 'utf8')) } } catch { }
 if (process.env.OFFICE_LAB_AUTOCHAIN === '0') chainConfig.enabled = false   // 环境变量硬关（优先级最高）
-if (!EMPLOYEES.feisila) chainConfig.auditEnabled = false
-if (!EMPLOYEES.chaorenq || process.env.OFFICE_LAB_PATROL === '0') chainConfig.patrolEnabled = false   // 巡视员空停巡查硬关
+if (process.env.OFFICE_LAB_PATROL === '0') chainConfig.patrolEnabled = false   // 巡视员空停巡查硬关
 // 守航目标循环总开关（v0.11.0）：默认开；契约自己的 goal.loop（active/shadow/off）在此之下再判。
 // 测试实例务必带 OFFICE_LAB_GUARD_GOAL=0（它会自己派活，同 AUTOCHAIN/PATROL 的隔离纪律）。
 if (chainConfig.guardGoalEnabled === undefined) chainConfig.guardGoalEnabled = true
@@ -6555,7 +6554,7 @@ function buildZhuzhuBlock(employee) {
 }
 
 // 老板这句话的话题锚：老板在某份档案上下文里开口（运行环境卡「找员工聊」/ 挂档案会话里回话）时，话里的「这个/那个」默认落在本档案。
-// 2026-10-06 事故（run 20261006011711-ec8fa0）：老板从「示例项目 v6.0.0」运行环境找菲菲说「罗宾说这个还需要加入第三方区别…」，
+// 2026-10-06 事故（run 20261006011711-ec8fa0）：老板从「示例项目 v6.0.0」运行环境找菲菲说「业务同事乙说这个还需要加入第三方区别…」，
 // 快照明明注入了，但没人告诉她「老板在聊这份档案」，紧挨原话的【同事近况】里又是 GG Bond 刚查的备货单——
 // 她把「这个」对号入座到同事的话题上，还断言「跟本会话挂的档案没关系」。所以锚紧贴老板原话之前（近因最强），并点名同事近况不是话题。
 function bossTopicAnchor(taskFileRel) {
@@ -7808,7 +7807,7 @@ function startRun(run, firstPrompt, { kind = 'dispatch', resume = false, userTex
     // 根治 Windows 默认 GBK(cp936) 吞中文的乱码——乱码曾诱发迷糊把 UTF-8 文件脑补成 UTF-16、把"读不到"误判成"临时文件被删"（run 20260811071357-67630f，教训库已记）。
     // OFFICE_LAB_EMPLOYEE/RUN：给**本机用户级 hook**（`~/.claude/settings.json` 里 DesktopTool 装的那几道）
     // 一个「这不是人在敲的开发坐席、是 office-lab 的无人值守流水线」的判据。
-    // 缘起 2026-09-08：DesktopTool 的 `itkb_gate.py`（PreToolUse matcher `Task|Agent`）为 CJ 开发坐席
+    // 缘起 2026-09-08：DesktopTool 的 `itkb_gate.py`（PreToolUse matcher `Task|Agent`）为 示例企业 开发坐席
     // 立了「派 Explore/general-purpose 子代理前必须先查 it-kb」的硬闸；用户级 settings 是全机共享的，
     // 员工 run 走同一个 SDK、同一个 OS 用户 → **无声继承**了这道门。菲菲要分页深读老板刚上传的原型
     // Demo，连开 4 个子代理全被 exit 2 拦下（KB 里当然没有"3 分钟前的附件"），她没重试、改用关键词
@@ -10815,11 +10814,6 @@ const readBody = (req, limit = 1e6) => new Promise((resolve, reject) => {
 })
 
 const server = http.createServer(async (req, res) => {
-  const localHosts = [`127.0.0.1:${PORT}`, `localhost:${PORT}`]
-  const host = req.headers.host
-  if (!localHosts.includes(host) || (req.headers.origin && req.headers.origin !== `http://${host}`)) {
-    return json(res, 403, { error: '工作台只接受本机请求' })
-  }
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`)
   const p = url.pathname
   try {
@@ -11184,7 +11178,7 @@ const server = http.createServer(async (req, res) => {
       const clampInt = (v, lo, hi, def) => Number.isFinite(v) ? Math.max(lo, Math.min(hi, Math.floor(v))) : def
       if (body.enabled !== undefined) chainConfig.enabled = !!body.enabled
       if (body.maxDepth !== undefined) chainConfig.maxDepth = clampInt(body.maxDepth, 1, 20, chainConfig.maxDepth)
-      if (body.patrolEnabled !== undefined) chainConfig.patrolEnabled = !!EMPLOYEES.chaorenq && !!body.patrolEnabled
+      if (body.patrolEnabled !== undefined) chainConfig.patrolEnabled = !!body.patrolEnabled
       if (body.patrolMax !== undefined) chainConfig.patrolMax = clampInt(body.patrolMax, 1, 50, chainConfig.patrolMax)
       if (body.patrolSweepMin !== undefined) chainConfig.patrolSweepMin = clampInt(body.patrolSweepMin, 1, 720, chainConfig.patrolSweepMin || 6)
       if (body.patrolGraceSec !== undefined) chainConfig.patrolGraceSec = clampInt(body.patrolGraceSec, 0, 120, chainConfig.patrolGraceSec ?? 8)   // 0=关闭宽限窗（退回即时派）

@@ -19,7 +19,6 @@ import { spawn, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const OFFICE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-process.env.OFFICE_LAB_WORKSPACE_ROOT = process.env.OFFICE_LAB_WORKSPACE_ROOT ? path.resolve(process.env.OFFICE_LAB_WORKSPACE_ROOT) : OFFICE_ROOT
 const APP_DIR = path.join(OFFICE_ROOT, 'app')
 const WEB_DIR = path.join(OFFICE_ROOT, 'web')
 const IS_WIN = process.platform === 'win32'

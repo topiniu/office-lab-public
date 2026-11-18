@@ -42,16 +42,18 @@ export default defineConfig({
     strictPort: true,
     // 绑所有网卡（含 IPv4 127.0.0.1 / 局域网 / Tailscale），与后端 server.js 一致；
     // 否则默认只绑 localhost→::1，IP 访问不到。
-    host: '127.0.0.1',
+    host: true,
     // 反代/自定义域名访问放行：Vite 默认只放 IP/localhost，非 IP 域名（如 localhost）会被
     // 主机检查（防 DNS rebinding）拦截。内网工作台经自有反代访问，这里放行域名（true=全放；或改成白名单）。
+    allowedHosts: true,
     proxy,
   },
   preview: {
     // 隧道与日常访问入口（托盘双击/悬浮窗也指这里）——同理必须 strictPort：漂了就等于全员打不开
     port: 4700,
     strictPort: true,
-    host: '127.0.0.1',
+    host: true,
+    allowedHosts: true,
     proxy,
   },
 })

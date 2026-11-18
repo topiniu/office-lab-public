@@ -4,39 +4,59 @@
     "title": "产品经理",
     "emoji": "🎀",
     "avatar": "/avatars/feifei.png",
-    "agentFile": "roles/feifei.md",
+    "agentFile": ".claude/agents/feifei.md",
     "roleFile": "roles/feifei.md",
     "memoryFile": "memories/feifei.md",
-    "permissionMode": "default"
+    "permissionMode": "bypassPermissions"
   },
   "ggbond": {
     "displayName": "GG Bond",
     "title": "全栈开发",
     "emoji": "🐷",
     "avatar": "/avatars/ggbond.png",
-    "agentFile": "roles/ggbond.md",
+    "agentFile": ".claude/agents/ggbond.md",
     "roleFile": "roles/ggbond.md",
     "memoryFile": "memories/ggbond.md",
-    "permissionMode": "default"
+    "permissionMode": "bypassPermissions"
   },
   "mihu": {
     "displayName": "迷糊老师",
     "title": "专业 QA",
     "emoji": "🧪",
     "avatar": "/avatars/mihu.png",
-    "agentFile": "roles/mihu-teacher.md",
+    "agentFile": ".claude/agents/mihu.md",
     "roleFile": "roles/mihu-teacher.md",
     "memoryFile": "memories/mihu-teacher.md",
-    "permissionMode": "default"
+    "permissionMode": "bypassPermissions"
+  },
+  "feisila": {
+    "displayName": "菲斯拉",
+    "title": "教导主任",
+    "emoji": "🔬",
+    "avatar": "/avatars/feisila.png",
+    "agentFile": ".claude/agents/feisila.md",
+    "roleFile": "roles/feisila.md",
+    "memoryFile": "memories/feisila.md",
+    "permissionMode": "bypassPermissions"
   },
   "bobby": {
     "displayName": "波比",
     "title": "DevOps",
     "emoji": "🚀",
     "avatar": "/avatars/bobby.png",
-    "agentFile": "roles/bobby.md",
+    "agentFile": ".claude/agents/bobby.md",
     "roleFile": "roles/bobby.md",
     "memoryFile": "memories/bobby.md",
-    "permissionMode": "default"
+    "permissionMode": "bypassPermissions"
+  },
+  "chaorenq": {
+    "displayName": "小呆呆",
+    "title": "巡视员",
+    "emoji": "🦸",
+    "avatar": "/avatars/xiaodaidai.png",
+    "agentFile": ".claude/agents/chaorenq.md",
+    "roleFile": "roles/chaorenq.md",
+    "memoryFile": "memories/chaorenq.md",
+    "permissionMode": "bypassPermissions"
   }
 }

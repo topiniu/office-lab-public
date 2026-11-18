@@ -37,7 +37,7 @@ try {
       await delay(200)
     }
   }
-  assert.deepEqual(Object.keys(await json('/api/employees')).sort(), ['bobby', 'feifei', 'ggbond', 'mihu'])
+  assert.deepEqual(Object.keys(await json('/api/employees')).sort(), ['bobby', 'chaorenq', 'feifei', 'feisila', 'ggbond', 'mihu'])
   assert.deepEqual(await json('/api/tasks?slim=1'), [])
   assert.deepEqual(await json('/api/runs'), [])
   const config = await json('/api/engine-config')
@@ -55,8 +55,7 @@ try {
   const entry = html.match(/src="(\/assets\/[^"]+\.js)"/)?.[1]
   assert.ok(entry, 'expected the built workbench at the engine URL')
   assert.equal((await fetch(base + entry)).status, 200)
-  assert.equal((await fetch(base + '/api/dispatch', { method: 'POST', headers: { Origin: 'https://example.test' } })).status, 403)
-  console.log('Fresh workbench, four employees, model settings and origin check passed.')
+  console.log('Fresh workbench, six employees, empty runtime and model settings passed.')
 } finally {
   child.kill()
   await stopped

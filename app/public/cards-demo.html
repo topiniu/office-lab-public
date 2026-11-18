@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>消息卡片预览 · 望子成龙小学</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* 预览页专属：把卡片放进一个仿聊天列，桌面居中限宽 */
+    body { display: block; overflow: auto; }
+    .demo-top {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px max(16px, env(safe-area-inset-left)) 14px max(16px, env(safe-area-inset-right));
+      background: var(--canvas); border-bottom: 1px solid var(--hairline);
+    }
+    .demo-top h1 { font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
+    .demo-top .sub { font-size: 12px; color: var(--ink-subtle); }
+    .demo-top .spacer { flex: 1; }
+    .demo-wrap { max-width: 720px; margin: 0 auto; padding: 18px 16px 60px; display: flex; flex-direction: column; gap: 0; }
+    .demo-fakeav {
+      width: 28px; height: 28px; border-radius: 9999px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--surface-3); border: 1px solid var(--hairline-strong); color: var(--ink-subtle);
+      font-size: 12px; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-top">
+    <div>
+      <h1>消息卡片预览</h1>
+      <div class="sub">动作卡（放行 / 拍板 / 缺陷 / 封板）+ 展示卡（链接 / SQL / 清单 / 表格 / 进度 / 字段 / 证据）</div>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn ghost" onclick="toggleTheme()" title="切换明暗">◑ 明暗</button>
+    <button class="btn secondary" onclick="resetActed()" title="清掉动作卡的「已处理」记录">重置已处理</button>
+  </div>
+  <div class="demo-wrap" id="demo"></div>
+
+  <script src="vendor/marked.min.js"></script>
+  <script src="cards.js"></script>
+  <script>
+    // 主题（与主站口径一致）
+    function applyTheme(t) { document.documentElement.dataset.theme = t }
+    function toggleTheme() { const n = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; localStorage.setItem('ol-theme', n); applyTheme(n) }
+    applyTheme(localStorage.getItem('ol-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'))
+    function resetActed() { localStorage.removeItem('ol-card-acted'); render() }
+
+    // 预览用 ctx：动作卡回发→提示（不真的发请求），其余交互真实生效
+    const ctx = {
+      runId: 'demo', employeeName: '员工（预览）',
+      reply: async (m) => alert('【回发给员工】\n\n' + m),
+      openUrl: (u) => alert('打开新标签页：\n' + u),
+      copy: async (t) => { try { await navigator.clipboard.writeText(t); alert('已复制到剪贴板') } catch { alert('复制失败（需 https 或授权）') } },
+      download: (n, c) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c], { type: 'text/plain' })); a.download = n; a.click() },
+      toast: (m) => console.log('toast:', m),
+    }
+    function render() {
+      const host = document.getElementById('demo')
+      host.innerHTML = ''
+      OLCards.DEMO.forEach(data => {
+        const row = document.createElement('div')
+        row.className = 'msg-row emp card-row'
+        row.innerHTML = '<span class="demo-fakeav">AI</span><div class="olc-wrap"></div>'
+        row.querySelector('.olc-wrap').appendChild(OLCards.renderCard(data, ctx))
+        host.appendChild(row)
+      })
+    }
+    render()
+  </script>
+</body>
+</html>

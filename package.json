@@ -11,6 +11,8 @@
     "start": "node scripts/bootstrap.mjs",
     "doctor": "node scripts/bootstrap.mjs --doctor",
     "engine": "node app/server.js",
-    "test": "node --test app/test/*.test.js"
+    "test": "node --test app/test/*.test.js",
+    "test:tray": "powershell -NoProfile -ExecutionPolicy Bypass -File tray/test/tray-logic.tests.ps1",
+    "test:all": "npm test && npm run test:tray"
   }
 }

@@ -61,7 +61,7 @@ test('术语泄漏自检：给人看的文本里混进机器枚举要被揪出�
 // ---------- ② 决定：扫全档案的待拍表 ----------
 
 const ARCHIVE = `---
-task: 大货备货通知管理 v0.1.0
+task: 项目跟踪监控 v0.1.0
 version: v0.1.0
 status: IN_QA
 owner: ggbond
@@ -240,7 +240,7 @@ test('★渲染出来的简报里不许有机器术语（术语泄漏自检兜�
 // ---------- 对真实档案跑一遍（回归防漂） ----------
 
 test('真实档案（大货备货 v0.1.0）能抽出待拍与时间线，且简报不含术语', () => {
-  const p = path.join(import.meta.dirname, '..', '..', 'tasks', '大货备货通知管理-v0.1.0.md')
+  const p = path.join(import.meta.dirname, '..', '..', 'tasks', '项目跟踪监控-v0.1.0.md')
   if (!fs.existsSync(p)) return                     // 档案被归档/改名不算测试失败
   const text = fs.readFileSync(p, 'utf8')
   const ds = extractDecisions(text).filter(d => !d.closed)
