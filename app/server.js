@@ -80,7 +80,6 @@ try { fs.mkdirSync(RUNS_DIR, { recursive: true }) } catch { }
 const GUARD_DIR = path.join(RUNS_DIR, 'guard')
 const UPLOADS_DIR = path.join(__dirname, 'uploads')
 const PUBLIC_DIR = path.join(__dirname, 'public')
-const WEB_DIR = path.join(OFFICE_ROOT, 'web', 'dist')
 const EMPLOYEES = JSON.parse(fs.readFileSync(path.join(__dirname, 'employees.json'), 'utf8'))
 for (const employee of Object.values(EMPLOYEES)) {
   const memory = path.join(OFFICE_ROOT, employee.memoryFile)
@@ -12384,16 +12383,6 @@ async function decide(behavior){
       return json(res, 200, { events, hasMore: start > 1 })
     }
 
-    // Serve the built workbench and its hashed assets on the same origin as the API.
-    const webIndex = path.join(WEB_DIR, 'index.html')
-    if ((p === '/' || p === '/chat') && fs.existsSync(webIndex))
-      return sendDynamicText(req, res, fs.readFileSync(webIndex, 'utf8'), MIME['.html'])
-    if (p.startsWith('/assets/')) {
-      const built = path.resolve(WEB_DIR, '.' + p)
-      if (built.startsWith(path.join(WEB_DIR, 'assets') + path.sep)) {
-        return serveStaticFile(req, res, built, { immutable: true })
-      }
-    }
     // ---- 静态文件 ----
     let file = p === '/' ? '/index.html' : p
     const abs = path.join(PUBLIC_DIR, path.normalize(file))

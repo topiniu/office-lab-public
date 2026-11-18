@@ -6,7 +6,7 @@ Office Lab 是一个可在自己电脑上运行的多 Agent 研发工作台。�
 
 ## 安装并启动
 
-准备 Git、[Node.js](https://nodejs.org/) 22.12 或更新版本。在终端执行以下命令。
+准备 Git、[Node.js](https://nodejs.org/) 22.12 或更新版本，这是当前 Agent SDK 的最低版本要求。`node scripts/bootstrap.mjs --no-web` 可使用原版旧界面。在终端执行以下命令。
 
 ```sh
 git clone https://github.com/topiniu/office-lab-public.git
@@ -14,7 +14,7 @@ cd office-lab-public
 npm start
 ```
 
-首次启动会安装依赖并构建前端。浏览器打开 [http://127.0.0.1:4800/](http://127.0.0.1:4800/)；停止时在终端按 Ctrl+C。
+首次启动会安装依赖并构建前端。新界面打开 [http://127.0.0.1:4700/](http://127.0.0.1:4700/)，引擎与旧界面位于 [http://127.0.0.1:4800/](http://127.0.0.1:4800/)；停止时在终端按 Ctrl+C。
 
 ## 配置模型，开始第一项工作
 

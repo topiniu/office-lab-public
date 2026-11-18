@@ -89,7 +89,7 @@ let paths = null
 try {
   paths = await import(path.join(APP_DIR, 'paths.js').replace(/\\/g, '/').replace(/^([A-Za-z]):/, 'file:///$1:'))
   ok(paths.describeWorkspace())
-  if (paths.WORKSPACE_ROOT === paths.OFFICE_ROOT) info('独立部署：员工的工作树 = 本仓根，兄弟仓相关能力（后端构建/发布枚举/UI 契约）自动跳过')
+  if (paths.WORKSPACE_MODE === 'standalone') info('独立部署：员工的工作树 = 本仓根，兄弟仓相关能力（后端构建/发布枚举/UI 契约）自动跳过')
   else info('monorepo 嵌套：员工的工作树 = 上级目录，兄弟仓能力可用')
 } catch (e) {
   warn(`读不到 app/paths.js（${e?.message || e}）——不影响启动，继续`)
@@ -99,8 +99,8 @@ try {
 step(1, 'Node 版本')
 const [NMAJ, NMIN] = process.versions.node.split('.').map(Number)
 if (NMAJ < 22 || (NMAJ === 22 && NMIN < 12)) {
-  fail(`当前 Node ${process.versions.node}，最低要求 22.12。`,
-    '装个 Node 22 LTS 或更新版本再来：\n  https://nodejs.org/  （或 nvm / fnm / volta 任选）')
+  fail(`当前 Node ${process.versions.node}，当前 SDK 要求 22.12+。`,
+    '装个 Node 22.12+ 或更新版本再来：\n  https://nodejs.org/  （或 nvm / fnm / volta 任选）')
 }
 ok(`Node ${process.versions.node}（${process.platform}-${process.arch}）`)
 // vite 8 要求 ^20.19 || >=22.12；不够就只跑旧 UI，别让新 UI 构建把首启拖死
@@ -224,7 +224,6 @@ let webReady = fs.existsSync(path.join(WEB_DIR, 'dist', 'index.html'))
 let pm = null   // [命令, 前置参数]
 if (!webAllowed) warn('已跳过（' + (FLAGS.noWeb ? '--no-web' : 'Node 版本不够') + '）→ 用旧 UI')
 else if (!fs.existsSync(WEB_DIR)) warn('web/ 不存在 → 用旧 UI')
-else if (FLAGS.startOnly && webReady) ok('web/dist 已就绪（--start-only 不重建）')
 else {
   // 包管理器三级择一：直装的 pnpm → corepack 代跑 → npm exec 临时拉一个
   const v = probe(binName('pnpm'))
@@ -240,6 +239,7 @@ else {
     }
   }
   if (!pm) { warn('本机没有可用的 pnpm（也没有 corepack / npm exec 能代跑）→ 跳过新 UI，用旧 UI') }
+  else if (FLAGS.startOnly && webReady) ok('web/dist 已就绪（--start-only 不重建）')
   else if (FLAGS.doctor) info('（--doctor 不安装不构建）')
   else {
     try {
@@ -307,7 +307,14 @@ if (!await waitHealthy(`${ENGINE}/api/health`)) {
 }
 ok(`引擎在 ${ENGINE}`)
 
-const uiUrl = ENGINE
+let uiUrl = ENGINE
+if (webReady && pm) {
+  step(8, '起新 UI')
+  const [cmd, pre] = pm
+  spawnBg(cmd, [...pre, 'preview', '--port', '4700', '--strictPort'], { cwd: WEB_DIR, env: { ...process.env, OFFICE_LAB_API_TARGET: process.env.OFFICE_LAB_API_TARGET || ENGINE } })
+  if (await waitHealthy('http://127.0.0.1:4700', 20000)) { uiUrl = 'http://127.0.0.1:4700'; ok('新 UI 在 http://127.0.0.1:4700') }
+  else warn('新 UI 没起来 → 用旧 UI ' + ENGINE)
+}
 
 if (!FLAGS.noOpen) {
   step(9, '打开浏览器')

@@ -16,7 +16,7 @@ await new Promise(resolve => socket.close(resolve))
 const runs = await mkdtemp(join(tmpdir(), 'office-lab-smoke-'))
 const base = 'http://127.0.0.1:' + port
 const child = spawn(process.execPath, ['scripts/bootstrap.mjs', '--start-only', '--no-open', '--port', String(port)], {
-  env: { ...process.env, OFFICE_LAB_RUNS_DIR: runs },
+  env: { ...process.env, OFFICE_LAB_RUNS_DIR: runs, OFFICE_LAB_API_TARGET: base },
   stdio: ['ignore', 'inherit', 'inherit'],
 })
 const stopped = once(child, 'exit')
@@ -51,11 +51,29 @@ try {
   assert.equal(saved.defaultEngine, 'codex')
   assert.equal((await json('/api/engine-config')).defaultEngine, 'codex')
 
-  const html = await (await fetch(base)).text()
+  assert.ok((await (await fetch(base)).text()).includes('app.js'), 'expected the original legacy UI at the engine URL')
+  const ui = 'http://127.0.0.1:4700'
+  let html = ''
+  for (let attempt = 0; attempt < 100; attempt++) {
+    try {
+      const response = await fetch(ui)
+      if (response.ok) { html = await response.text(); break }
+    } catch {}
+    await delay(200)
+  }
   const entry = html.match(/src="(\/assets\/[^"]+\.js)"/)?.[1]
-  assert.ok(entry, 'expected the built workbench at the engine URL')
-  assert.equal((await fetch(base + entry)).status, 200)
-  console.log('Fresh workbench, six employees, empty runtime and model settings passed.')
+  assert.ok(entry, 'expected the original built workbench on port 4700')
+  assert.equal((await fetch(ui + entry)).status, 200)
+  const proxiedHealth = await (await fetch(ui + '/api/health')).json()
+  assert.equal(proxiedHealth.port, port, 'new UI must proxy to the isolated engine')
+  for (const employee of ['feifei', 'ggbond', 'mihu', 'bobby', 'feisila', 'chaorenq']) {
+    const detail = await json('/api/employees/' + employee + '/detail')
+    assert.ok(detail.description.length > 10, employee + ' agent frontmatter')
+    assert.ok(detail.roleMd.length > 1000, employee + ' full SOP')
+    assert.ok(detail.agentMd.length > 1000, employee + ' full agent card')
+    assert.equal(detail.lessonCount, 0)
+  }
+  console.log('Original new and legacy UIs, six full SOPs, empty runtime and model settings passed.')
 } finally {
   child.kill()
   await stopped
