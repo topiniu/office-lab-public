@@ -6,7 +6,7 @@ Office Lab 是一个可在自己电脑上运行的多 Agent 研发工作台。�
 
 ## 安装并启动
 
-准备 Git、[Node.js](https://nodejs.org/) 22.12 或更新版本，这是当前 Agent SDK 的最低版本要求。`node scripts/bootstrap.mjs --no-web` 可使用原版旧界面。在终端执行以下命令。
+准备 Git，建议使用 [Node.js](https://nodejs.org/) 22.12 或更新版本。引擎和旧界面沿用原版 Node.js 18+ 支持，新界面需要 Node.js 20.19+（20 系列）或 22.12+。`node scripts/bootstrap.mjs --no-web` 可使用原版旧界面。在终端执行以下命令。
 
 ```sh
 git clone https://github.com/topiniu/office-lab-public.git
@@ -48,7 +48,7 @@ Windows PowerShell 中用 `$env:OFFICE_LAB_WORKSPACE_ROOT = '..'`，再执行 `n
 - **任务看板**显示 Markdown 任务档案、需求条目、负责人、覆盖情况及下一步。
 - **员工会话**提供实时输出、继续对话、工具审批和跨引擎会话交接。
 - **守航与验收台**用于安排一轮工作，查看验收证据及待人工决策事项。
-- **可选集成**可在自己的环境配置企微、飞书、手机推送和兼容的 E2E 执行器。初始配置为空，需要时到设置中启用。
+- **可选集成**可在自己的环境配置企微、飞书、手机推送和兼容的 E2E 执行器。私人连接配置为空，功能开关沿用原版，在设置中填写自己的连接信息。
 
 工作台沿用原版网络监听与员工权限配置。引擎默认监听所有网卡，设 `OFFICE_LAB_HOST=127.0.0.1` 可仅允许本机连接。默认员工权限为 `bypassPermissions`，命令和工具以本机用户权限执行，可在员工设置中调整。
 

@@ -4,7 +4,7 @@
   "private": true,
   "description": "望子成龙小学 · office-lab —— 仓根入口（只放 scripts；引擎在 app/、新 UI 在 web/，各自有独立 package.json）",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "setup": "node scripts/bootstrap.mjs",

@@ -98,14 +98,14 @@ try {
 // ---------- 1. Node 版本闸 ----------
 step(1, 'Node 版本')
 const [NMAJ, NMIN] = process.versions.node.split('.').map(Number)
-if (NMAJ < 22 || (NMAJ === 22 && NMIN < 12)) {
-  fail(`当前 Node ${process.versions.node}，当前 SDK 要求 22.12+。`,
-    '装个 Node 22.12+ 或更新版本再来：\n  https://nodejs.org/  （或 nvm / fnm / volta 任选）')
+if (NMAJ < 18) {
+  fail(`当前 Node ${process.versions.node}，引擎要求 18+。`,
+    '装个 Node 20 LTS 或更新版本再来：\n  https://nodejs.org/  （或 nvm / fnm / volta 任选）')
 }
 ok(`Node ${process.versions.node}（${process.platform}-${process.arch}）`)
 // vite 8 要求 ^20.19 || >=22.12；不够就只跑旧 UI，别让新 UI 构建把首启拖死
 let webAllowed = !FLAGS.noWeb
-if (webAllowed && (NMAJ < 20 || (NMAJ === 20 && NMIN < 19) || (NMAJ === 21))) {
+if (webAllowed && (NMAJ < 20 || (NMAJ === 20 && NMIN < 19) || (NMAJ === 21) || (NMAJ === 22 && NMIN < 12))) {
   warn(`Node ${process.versions.node} 构建不了新 UI（vite 需 ^20.19 或 >=22.12）→ 本次只用旧 UI`)
   webAllowed = false
 }
@@ -327,5 +327,5 @@ if (!FLAGS.noOpen) {
 }
 
 console.log(`\n${c(32, '🏢 望子成龙小学已启动')} → ${c(1, uiUrl)}`)
-console.log(c(90, '   外部集成（企微 / 飞书 / 猪猪 / 手机推送）默认关闭，用到时在界面「设置」里填。'))
+console.log(c(90, '   外部集成的功能开关沿用原版，请在界面「设置」中填写自己的连接信息。'))
 console.log(c(90, '   Ctrl+C 停止。'))

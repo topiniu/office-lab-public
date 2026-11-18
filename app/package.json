@@ -3,9 +3,9 @@
   "version": "0.12.0",
   "private": true,
   "type": "module",
-  "description": "Office Lab 本地多 Agent 工作台引擎",
+  "description": "望子成龙小学 —— 职责 Agent 办公室：任务看板 + 员工派工 + 运行流式观测 + 会话续聊（Agent SDK 引擎，Node 18+）",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "start": "node server.js",

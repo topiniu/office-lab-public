@@ -561,7 +561,7 @@ const saveQuickPhrases = () => atomicWrite(QUICK_PHRASES_FILE, JSON.stringify(qu
 // 我们只维护「入口 + 连接基线」，端点/参数/文件接口一律以线上对接文档为准。
 const ZHUZHU_CONFIG_FILE = path.join(RUNS_DIR, 'zhuzhu-config.json')
 let zhuzhuConfig = {
-  enabled: false,
+  enabled: true,
   baseUrl: 'http://127.0.0.1:32147',                  // App Run API 基地址；仅无持久化文件时的兜底默认，真值以设置页为准（主机会漂移，别在别处写死）
   docPath: '/external-integration-documents',          // 线上对接文档端点（相对 baseUrl）
   // **被测前端**地址（不是猪猪自己的地址）。2026-09-07 新增：Z-B 环境指纹 `GET /env-fingerprint`
@@ -5240,7 +5240,7 @@ let larkConfig = {
   // 只有自动识别不准时，才在设置卡片里手动覆盖对应字段（非空即覆盖）。
   fields: { summary: '', detail: '', status: '', proposer: '', proposeTime: '' },
   statusPending: '待处理',                   // 新建 intake 行的状态值
-  autoSync: false,                           // 引擎按任务档案自动对齐表里状态/归属版本/上线日期（见 syncLarkFromArchives）；false=只对账报告不写
+  autoSync: true,                            // 引擎按任务档案自动对齐表里状态/归属版本/上线日期（见 syncLarkFromArchives）；false=只对账报告不写
 }
 try { larkConfig = { ...larkConfig, ...JSON.parse(fs.readFileSync(LARK_CONFIG_FILE, 'utf8')) } } catch { }
 const saveLarkConfig = () => fs.writeFileSync(LARK_CONFIG_FILE, JSON.stringify(larkConfig, null, 2))

@@ -38,14 +38,3 @@ app/dbg-*.mjs
 .playwright-iso.png
 card-*-after.png
 paste-chip.png
-
-# Per-installation data and credentials
-/tasks/*
-/memories/*
-/app/runs/
-/app/uploads/
-/templates/uploads/
-web/dist/
-.env
-.env.*
-.claude/settings.local.json
