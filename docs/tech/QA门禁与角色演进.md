@@ -269,7 +269,7 @@
 
 ### §3.67 QA 硬闸 v2：从「状态有交代」升级为「机器证据闭环」，取消自批例外与 LLM 最终放行权（2026-08-11，CC 长讨论 + v5.17 假绿审计驱动）
 
-**触发**：复盘老板与 CC 的长讨论（会话 `ad89e185-19a4-4839-b7ca-0e3bd6e1c831`）以及 v5.17 最新所谓「全量复测」。逐项核对后发现，§3.64/§3.66 虽然已经把 facet 分母和三个反模式 linter 放进引擎，但系统仍能稳定地产生假绿：v5.17 的 5 个复测 case 全部只用 `fxHome`，没有 create/flow macro；5/5 都写 `lintAck`；4/5 搜硬编码 JY 业务号；任务档案却同时写着 `qa_passed: true`。覆盖矩阵里大量 `SOURCE_ATTESTED/HUMAN_INHERENT/BLOCKED_WITH_PROOF` 被算作「覆盖完整」，所谓 auto facet 里真正 `COVERED_GREEN` 的只是少数。
+**触发**：复盘老板与 CC 的长讨论（会话 `b8c1cc65-24fd-5d0e-a038-4878ee0c3c96`）以及 v5.17 最新所谓「全量复测」。逐项核对后发现，§3.64/§3.66 虽然已经把 facet 分母和三个反模式 linter 放进引擎，但系统仍能稳定地产生假绿：v5.17 的 5 个复测 case 全部只用 `fxHome`，没有 create/flow macro；5/5 都写 `lintAck`；4/5 搜硬编码 JY 业务号；任务档案却同时写着 `qa_passed: true`。覆盖矩阵里大量 `SOURCE_ATTESTED/HUMAN_INHERENT/BLOCKED_WITH_PROOF` 被算作「覆盖完整」，所谓 auto facet 里真正 `COVERED_GREEN` 的只是少数。
 
 **根因不是模型不够聪明，而是目标函数和权力模型仍然错了**：
 
