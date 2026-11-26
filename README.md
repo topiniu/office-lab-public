@@ -12,6 +12,23 @@ Office Lab 将需求分析、软件开发、质量验证和发布准备交给职
 
 ![Office Lab 工作台：首次启动的六位员工与任务看板](docs/workbench.png)
 
+## Demo: Office Lab × 猪猪
+
+[![观看 Office Lab × 猪猪的 Todo List 协作演示](docs/demo/office-lab-zhuzhu-demo.png)](docs/demo/office-lab-zhuzhu-demo.webm)
+
+[观看演示 / 下载 WebM（3:36，约 4.8 MiB）](docs/demo/office-lab-zhuzhu-demo.webm)
+
+同一份 Todo List 任务里有两条需求：编辑标题、删除前确认。用户在卡片上选定规则后，菲菲把需求交给 GG Bond 开发，再交给迷糊老师用猪猪在真实 Chromium 中执行测试。视频保留了一组故意失败的 RED 校准与按预期操作的 GREEN 执行，以及 6 个验收点逐项回写和最后的任务看板。
+
+- **00:00** 提交两条需求，确认删除规则
+- **00:32** 菲菲交接给 GG Bond
+- **01:03** 开发交接给迷糊老师
+- **01:15** 猪猪启动并操作真实浏览器
+- **01:49** 首个 Facet 回写通过
+- **03:18** 核对 6/6 覆盖，关闭面板查看两条需求的 QA 状态
+
+这是独立 Todo List 示例的加速录屏。片尾补录了同一任务的 QA 收尾，不包含企业业务数据，也不代表生产发布或公开仓库默认配置下的联合验收。
+
 ## Why Office Lab?
 
 当 Code Agent 已经能够编写代码，软件工程面临的问题不再只是如何生成代码：
@@ -214,7 +231,7 @@ Office Lab 可以与独立项目 [Zhuzhu / Vision E2E](https://github.com/topini
 
 QA Agent 负责设计用例，独立执行器负责实际执行，Office Lab 引擎负责消费证据并计算交付门禁。当执行器不可用或证据不足时，按未验证处理，而不是认定通过。
 
-Vision E2E 是独立项目，不随 Office Lab 默认安装。完整浏览器验证需要另行安装并配置兼容的执行器；公开展示版之间的联合流程仍需单独验证。
+Vision E2E 是独立项目，不随 Office Lab 默认安装。完整浏览器验证需要另行安装并配置兼容的执行器；上方录屏展示了已配置环境下的独立示例；两个公开仓库的默认配置不等同于开箱即用的联合流程。
 
 相关实现：[E2E 批次调度](app/e2e-batch.js) · [执行器能力适配](app/zhuzhu-capabilities.js)
 
