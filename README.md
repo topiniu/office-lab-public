@@ -1,265 +1,382 @@
 # Office Lab
 
-Office Lab 是一个可在自己电脑上运行的多 Agent 研发工作台。产品、开发、QA、发布、审计和巡视六位员工各有职责和完整 SOP。看板显示每项工作的进度、验证结果和待你决定的事项。你可以打开员工会话、派工、跟进交接并做最终验收。
+**A Multi-Agent Engineering Workbench for Verifiable Software Delivery.**
 
-![Office Lab 首次启动，六位员工与空任务看板](docs/workbench.png)
+一个面向真实软件交付场景、可在本机运行的多 Agent 研发工作台。
 
-## 安装并启动
+Office Lab 将需求分析、软件开发、质量验证和发布准备交给职责独立的 Agent，通过统一调度引擎、持久化任务档案、确定性质量门禁和人工授权机制，让 AI 的执行过程可追踪、可恢复、可验收。
 
-准备 Git，建议使用 [Node.js](https://nodejs.org/) 22.12 或更新版本。引擎和旧界面沿用原版 Node.js 18+ 支持，新界面需要 Node.js 20.19+（20 系列）或 22.12+。`node scripts/bootstrap.mjs --no-web` 可使用原版旧界面。在终端执行以下命令。
+它起源于真实企业供应链系统的持续迭代实践，而非单纯的多 Agent 演示。
+
+**当前仓库版本：v0.12.0 · Claude Code / Codex · Local-first**
+
+![Office Lab 工作台：首次启动的六位员工与任务看板](docs/workbench.png)
+
+## Why Office Lab?
+
+当 Code Agent 已经能够编写代码，软件工程面临的问题不再只是如何生成代码：
+
+- 如何让多个 Agent 在独立上下文中持续协作？
+- 如何避免需求、开发和测试之间的信息断层？
+- 如何证明 Agent 报告的「测试通过」真的成立？
+- 如何在人不在场时推进任务，同时限制越权行为？
+- 如何在会话中断、模型不可用或执行失败后恢复工作？
+
+Office Lab 不追求让更多 Agent 同时聊天，而是让每个 Agent 承担明确的交付责任，由工程机制约束协作过程，由执行证据支撑交付结论。
+
+## Quick Start
+
+### 1. 安装并启动
+
+准备 Git 和 [Node.js](https://nodejs.org/)，推荐 Node.js 22.12 或更新版本。
 
 ```sh
 git clone https://github.com/topiniu/office-lab-public.git
 cd office-lab-public
+```
+
+macOS / Linux：
+
+```sh
+OFFICE_LAB_HOST=127.0.0.1 npm start
+```
+
+Windows PowerShell：
+
+```powershell
+$env:OFFICE_LAB_HOST = "127.0.0.1"
 npm start
 ```
 
-首次启动会安装依赖并构建前端。新界面打开 [http://127.0.0.1:4700/](http://127.0.0.1:4700/)，引擎与旧界面位于 [http://127.0.0.1:4800/](http://127.0.0.1:4800/)；停止时在终端按 Ctrl+C。
+首次启动会按需安装依赖、构建前端并启动调度引擎。
 
-## 配置模型，开始第一项工作
+- 新版工作台：[http://127.0.0.1:4700/](http://127.0.0.1:4700/)
+- 引擎与兼容版工作台：[http://127.0.0.1:4800/](http://127.0.0.1:4800/)
 
-1. 任选一个执行引擎并在运行 Office Lab 的电脑上完成认证。
-   - **Claude Code**：按 [Claude Code 设置说明](https://code.claude.com/docs/en/setup) 安装并登录，或在启动 Office Lab 的终端设置自己的 `ANTHROPIC_API_KEY`。
-   - **Codex**：安装 [Codex CLI](https://developers.openai.com/codex/cli/)，执行 `codex login`。
-2. 打开 **设置 → Agent 基座**，选择默认引擎及模型。模型留空时使用该引擎的默认模型。Codex 找不到时，在设置中填写可执行文件路径。
-3. 点击 **派工**，选择员工并说明目标。例如，给菲菲发一条「为项目的搜索功能整理需求和验收标准，建一份任务档案」。可在会话中查看结果、继续补充要求或拍板。
+引擎与旧界面支持 Node.js 18+，新版 UI 需要 Node.js 20.19+（20 系列）或 22.12+。若新版 UI 无法构建，可以使用免构建的兼容界面（仍建议设置本机监听地址）：
 
-如果会话提示模型服务返回 401，请检查所选引擎的登录状态和账号可用性，再重新派工。两个引擎分别认证。
+```sh
+node scripts/bootstrap.mjs --no-web
+```
 
-![派工时选择员工、执行基座与本次模型](docs/dispatch.png)
+终端启动的实例可按 Ctrl+C 停止。
 
-首次启动时，任务和会话为空。内置员工包括菲菲（产品）、GG Bond（开发）、迷糊老师（QA）、波比（发布）、菲斯拉（教导主任／审计）和小呆呆（巡视）。任务档案写入 `tasks/`，会话及配置写入 `app/runs/`，附件写入 `app/uploads/`。
+> **安全提示：** 引擎原版默认监听所有网卡，内置员工默认使用 bypassPermissions，命令和工具以本机用户权限执行。建议首次运行时设置 OFFICE_LAB_HOST=127.0.0.1，并在隔离的、无敏感凭据的工作区中试用，按需调整员工权限。不要直接暴露到公网。
 
-## 连接自己的项目
+### 2. 配置 Agent 执行基座
 
-直接启动时，员工在 Office Lab 仓库中工作。要让员工访问其他项目，可把 Office Lab 克隆到项目目录下，并在启动时显式将该目录设为工作区根。
+| 基座 | 配置方式 |
+| --- | --- |
+| Claude Code | 按 [Claude Code 设置说明](https://code.claude.com/docs/en/setup) 安装并登录，或在启动终端配置自己的 ANTHROPIC_API_KEY |
+| Codex | 安装 [Codex CLI](https://developers.openai.com/codex/cli/)，执行 codex login |
+
+在工作台的「设置 → Agent 基座」中选择默认执行引擎和模型。模型留空时使用相应基座的默认模型；若找不到 Codex，可在设置中指定可执行文件路径。
+
+支持单次派工覆盖默认基座及模型，也支持将未完成的工作交接至另一执行基座继续处理。若遇到 401，请检查相应基座的认证及账号状态；两种基座分别认证。
+
+![Office Lab 派工界面](docs/dispatch.png)
+
+### 3. 开始第一项任务
+
+点击「派工」，选择产品经理菲菲，输入工作目标，例如：
+
+> 为项目的搜索功能整理需求和验收标准，创建任务档案，并列出需要确认的业务问题。
+
+你可以在工作台查看员工的执行过程、工具调用、任务档案和待决策事项，并继续与员工协作。
+
+首次启动时不包含历史业务任务、员工私人记忆或运行凭证。任务档案写入 `tasks/`，会话及配置写入 `app/runs/`，附件写入 `app/uploads/`。
+
+### 4. 连接自己的项目
+
+Office Lab 可以独立运行，也可以作为其他代码仓库的研发工作台。
 
 ```sh
 cd /path/to/your/project
 git clone https://github.com/topiniu/office-lab-public.git office-lab
 cd office-lab
-OFFICE_LAB_WORKSPACE_ROOT=.. npm start
+OFFICE_LAB_HOST=127.0.0.1 OFFICE_LAB_WORKSPACE_ROOT=.. npm start
 ```
 
-Windows PowerShell 中用 `$env:OFFICE_LAB_WORKSPACE_ROOT = '..'`，再执行 `npm start`。任务档案和配置仍保存在 Office Lab 目录内。发布和部署按目标项目的规则执行。
+Windows PowerShell：
 
-## 工作台功能
+```powershell
+$env:OFFICE_LAB_HOST = "127.0.0.1"
+$env:OFFICE_LAB_WORKSPACE_ROOT = ".."
+npm start
+```
 
-- **任务看板**显示 Markdown 任务档案、需求条目、负责人、覆盖情况及下一步。
-- **员工会话**提供实时输出、继续对话、工具审批和跨引擎会话交接。
-- **守航与验收台**用于安排一轮工作，查看验收证据及待人工决策事项。
-- **可选集成**可在自己的环境配置企微、飞书、手机推送和兼容的 E2E 执行器。私人连接配置为空，功能开关沿用原版，在设置中填写自己的连接信息。
+员工在指定工作区内开展工作，Office Lab 自身的任务档案、会话和配置仍保存在其目录中。发布和部署遵循目标项目的规则；依赖特定业务仓库的能力需要相应的项目环境。
 
-工作台沿用原版网络监听与员工权限配置。引擎默认监听所有网卡，设 `OFFICE_LAB_HOST=127.0.0.1` 可仅允许本机连接。默认员工权限为 `bypassPermissions`，命令和工具以本机用户权限执行，可在员工设置中调整。
+## Meet the Team
 
-## Windows 托盘与迁移
+Office Lab 内置六位职责独立的常驻 Agent。
 
-Windows 首次安装完成后，停止终端实例，双击 `tray/启动托盘.cmd`。托盘提供服务启停、重启、日志、开机自启和 WebView2 悬浮窗。完整说明见 [托盘文档](tray/README.md)。macOS/Linux 使用 `npm start`。
+| Agent | 职责 | 主要交付物 |
+| --- | --- | --- |
+| [菲菲](roles/feifei.md) | 产品经理 | 需求说明、验收标准、需求溯源、发布说明 |
+| [GG Bond](roles/ggbond.md) | 全栈开发 | 技术方案、代码、实施记录、自检与交接材料 |
+| [迷糊老师](roles/mihu-teacher.md) | QA 工程师 | 测试用例、执行报告、缺陷单 |
+| [波比](roles/bobby.md) | DevOps | 仓库变更枚举、合并请求、发布清单 |
+| [菲斯拉](roles/feisila.md) | 独立审计 | 质量复核、证据缺口识别 |
+| [小呆呆](roles/chaorenq.md) | 巡视员 | 异常停顿诊断、任务续派与协作恢复 |
 
-在源 Windows 机器停止工作台后执行打包，把包带到新机器，再执行包内的恢复脚本。完整包保留代码和数据，`-DataOnly` 提供数据迁移模式。
+每位员工拥有独立的角色 SOP、工作上下文和交付责任。跨岗位交接由 Office Lab 调度引擎统一管理，而不是依靠某个 Agent 的私有会话传话。
+
+## Architecture
+
+```mermaid
+flowchart TD
+    H["Human: Requirements / Authorization / Acceptance"]
+    W["Office Lab Workbench"]
+    E["Orchestration Engine"]
+    subgraph Team["Role-based Agents"]
+        P["Product"]
+        D["Development"]
+        Q["QA"]
+        O["DevOps"]
+        A["Audit"]
+        S["Patrol"]
+    end
+    R[("Task Archives / Run Records")]
+    M["Claude Code / Codex"]
+    Z["Zhuzhu: Independent E2E Executor"]
+
+    H <--> W
+    W <--> E
+    E <--> P
+    E <--> D
+    E <--> Q
+    E <--> O
+    E <--> A
+    E <--> S
+    E <--> R
+    E <--> M
+    E <--> Z
+```
+
+Office Lab 将系统职责划分为四层：
+
+- **Agent 执行层**：理解需求、修改代码、设计用例及分析异常。
+- **调度与控制层**：派工、状态迁移、权限判断、质量门禁和会话恢复。
+- **持久化数据层**：任务档案、交接卡、验收标准和运行记录。
+- **人机协作层**：可视化工作台、授权配置、运行观测和人工验收。
+
+调度引擎承担确定性的控制职责，模型承担需要理解业务语境的工作。
+
+## Engineering Highlights
+
+### 1. 文件化协作与持久化任务状态
+
+Office Lab 不依赖 Agent 之间共享完整聊天上下文。
+
+Markdown 任务档案保存任务状态、需求条目、验收标准和产物指针；结构化交接卡传递当前结论与下一棒所需的信息；任务快照为新会话或恢复后的会话提供必要上下文。
+
+任务档案作为持久化业务事实源，使协作过程可以被人工阅读、追溯和重新接续。版本作为需求条目的容器，条目独立推进；状态与合法流转遵循文档契约，而不是依赖口头汇报。缺陷修复、增量需求和人工确认拥有不同的回路。
+
+相关实现：[任务快照](app/task-brief.js) · [交接冻结](app/handoff-freeze.js) · [状态及文档契约](文档格式规范.md) · [任务档案模板](templates/task-archive.md)
+
+### 2. Agent Runtime 与多基座适配
+
+调度引擎将 Employee、Run 和底层 Session 分离，管理派工、流式事件、会话续聊、停止、结果交回与跨岗位交接。
+
+当前提供 Claude Agent SDK 和 Codex App Server 两种执行适配器。
+
+切换执行基座时，Office Lab 保留任务身份、协作记录和必要的交接上下文，并在目标基座创建新的底层会话，而非直接复用不同供应商的 Session ID。
+
+相关实现：[调度引擎](app/server.js) · [执行适配层](app/engines/) · [多引擎技术说明](docs/office-lab-v0.12.0-多引擎.md)
+
+### 3. Evidence-based Quality Gates
+
+Agent 自己报告的「通过」，不能直接作为软件交付的可信依据。
+
+Office Lab 将需求拆分为可追踪的验收单元 Facet，由引擎维护覆盖矩阵并核对执行证据：
+
+- 每个验收点具有独立标识及可验证的判据。
+- GREEN 证据证明正常场景满足预期；RED 校准检验断言是否能够识别错误结果。
+- 证据关联运行编号、用例及运行摘要哈希、提交版本和环境信息。
+- 要求 UI 验证的场景不能用单纯 API 验证替代。
+- 源码审阅、环境阻断和必须人工验证的事项不冒充自动化通过。
+
+系统同时引入需求溯源与需求质量检查，降低「遗漏需求却取得全量测试通过」的风险。审计提供独立复核视角，但不能替代引擎基于真实证据的判定。
+
+相关实现：[覆盖率与证据门禁](app/coverage.js) · [需求溯源](app/req-trace.js) · [需求分析质量](app/req-quality.js) · [审计](app/audit-trust.js)
+
+### 4. 与独立 E2E 执行器协作
+
+Office Lab 可以与独立项目 [Zhuzhu / Vision E2E](https://github.com/topiniu/vision-e2e-showcase) 协作。
+
+| Office Lab | Vision E2E |
+| --- | --- |
+| 管理软件交付流程 | 执行浏览器自动化测试 |
+| 组织 Agent 协作 | 执行结构化测试用例 |
+| 维护验收覆盖矩阵 | 生成截图、报告及证据包 |
+| 根据证据计算门禁 | 返回真实执行结果 |
+
+QA Agent 负责设计用例，独立执行器负责实际执行，Office Lab 引擎负责消费证据并计算交付门禁。当执行器不可用或证据不足时，按未验证处理，而不是认定通过。
+
+Vision E2E 是独立项目，不随 Office Lab 默认安装。完整浏览器验证需要另行安装并配置兼容的执行器；公开展示版之间的联合流程仍需单独验证。
+
+相关实现：[E2E 批次调度](app/e2e-batch.js) · [执行器能力适配](app/zhuzhu-capabilities.js)
+
+### 5. Human-in-the-loop & Guarded Execution
+
+Office Lab 支持两种人机协作模式：
+
+**共驾（Co-pilot）**：人在场时，通过工作台持续参与需求澄清、技术决策和人工预检。
+
+**守航（Guarded Run）**：人在不持续参与的情况下，通过预先定义的守航契约约束任务范围、授权动作、预算、截止时间和禁止操作。
+
+守航模式允许 Agent 在授权范围内持续推进可逆工作，并通过巡视和恢复机制处理部分异常停顿。生产发布、生产数据库迁移、真实外部发送等不可逆操作应保留明确的人工授权边界。
+
+相关实现：[守航契约](app/guard-ledger.js) · [门禁矩阵](app/gate-matrix.js) · [停顿检测](app/stall-guard.js) · [人工验收卡](app/acceptance-card.js) · [发布对账](app/release-chain.js)
+
+## Workbench
+
+当前工作台已提供：
+
+- 可视化任务看板与需求条目状态。
+- 六位员工的独立会话及实时执行观测。
+- 派工、交接、工具审批与会话续聊。
+- Claude Code / Codex 模型与执行基座管理。
+- 验收覆盖矩阵、守航设置和人工验收入口。
+- 可选的企业微信、飞书、手机推送和 E2E 执行器集成。
+- Windows 托盘常驻、服务管理及整机迁移工具。
+
+前端使用 React、TypeScript、Vite 和 shadcn/ui，调度引擎基于 Node.js。详见[应用文档](app/README.md)。
+
+### Windows 托盘与迁移
+
+首次安装完成后停止终端实例，双击 `tray/启动托盘.cmd`。托盘提供服务启停、重启、日志、开机自启和 WebView2 悬浮窗。完整说明见[托盘文档](tray/README.md)。
+
+在源 Windows 机器停止工作台后执行打包，将包带到新机器，再执行包内的恢复脚本。完整包保留代码和数据，`-DataOnly` 提供数据迁移模式。
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/迁移打包.ps1 -Dest D:\ol-migrate -SkipNodeModules
 powershell -NoProfile -ExecutionPolicy Bypass -File D:\ol-migrate\迁移恢复.ps1 -SkipWecom
 ```
 
-迁移包包含本机任务、会话和私人设置，应由使用者自行保管。迁移脚本包含全部原版参数和恢复能力。
+迁移包可能包含本机任务、会话和私人设置，应自行妥善保管，不要提交至公共仓库。macOS / Linux 当前使用前台启动方式。
 
-## 公开范围
+## Verification
 
-保留原版六份角色 SOP、六份 Agent 工牌、全部模板、调度引擎、审计巡视、技术文档、演进记录、托盘组件及迁移工具。业务名称、内网地址、账号标识和私人资源标识替换为示例。历史任务、员工记忆、会话、附件及本地凭证从空状态开始，第三方服务由用户自行配置。Windows 与跨平台启动使用同一套应用和任务协议。
+### Office Lab v0.12.0
+
+根据 2026-10-23 的历史发布验证记录：
+
+| 验证项目 | 结果 |
+| --- | --- |
+| 引擎自动化回归 | 971/971 通过 |
+| Windows 托盘测试 | 22/22 通过 |
+| TypeScript 检查 | 通过 |
+| Vite 生产构建 | 通过 |
+
+v0.12.0 开发验收另外覆盖 Claude 和 Codex 的真实协议调用、工具调用、连续对话、冷恢复、取消和跨基座交接等场景。
+
+详细记录见 [v0.12.0 多引擎技术与验证记录](docs/office-lab-v0.12.0-多引擎.md)。
+
+在本地执行：
 
 ```sh
 npm test
-node scripts/bootstrap.mjs --doctor
+npm run doctor
 ```
 
-问题可在 [GitHub Issues](https://github.com/topiniu/office-lab-public/issues) 反馈。
+Windows 托盘测试：
 
----
-
-# Office Lab —— 职责 Agent 工作规范原型
-
-> 蓝本：`docs/示例项目需求/` v1 → v5.10 的完整迭代史（逆向复盘见 [`复盘-示例项目v1到v5.10流程提纯.md`](复盘-示例项目v1到v5.10流程提纯.md)）。
-> 目标：把开发 / QA / DevOps 三个职责提纯为独立 agent，先以「三个 Claude Code 会话 + 文件化交接」运转，后续演进为 office lab 统一编排。
-
-## 三个角色
-
-| 角色 | 岗位 | 核心产物 | SOP |
-|------|------|---------|-----|
-| **菲菲** | 产品经理 | 需求说明与验收标准、版本发布说明、CHANGELOG、权限变更记录 | [`roles/feifei.md`](roles/feifei.md) |
-| **GG Bond** | 全栈开发 | 需求确认文档（技术确认）、实施记录、代码、RELEASE_CHECKLIST 开发段、对抗性自查、人工预检单（引导） | [`roles/ggbond.md`](roles/ggbond.md) |
-| **迷糊老师** | 专业 QA | 测试用例(上线前必过)、猪猪 E2E 用例、QA 结果报告、缺陷单 | [`roles/mihu-teacher.md`](roles/mihu-teacher.md) |
-| **波比** | DevOps / 发布 | 仓库枚举与部署清单、MR、SQL 交付执行、上线后收尾 | [`roles/bobby.md`](roles/bobby.md) |
-
-## 目录结构
-
-```
-office-lab/
-├── README.md                  # 本文件（流程与状态机）
-├── 文档格式规范.md              # ★ 唯一格式事实源：文档体系导览 + 命名 + 机器可解析契约
-├── 复盘-示例项目v1到v5.10流程提纯.md   # 逆向复盘：产物链演进、职责切分依据
-├── roles/                     # 角色 SOP（红线 + 阶段门禁 + 交付物 + 规范指针）
-├── templates/                 # 任务档案、交接卡、各文档骨架模板
-│   ├── task-archive.md        # 任务档案（frontmatter 状态机）
-│   ├── handoff-pm-to-dev.md   # 菲菲 → GG Bond 需求卡
-│   ├── handoff-dev-to-qa.md   # GG Bond → 迷糊老师 交接卡
-│   ├── handoff-qa-to-devops.md# 迷糊老师 → 波比 交接卡
-│   ├── pm-*.md / dev-*.md / qa-*.md / devops-*.md   # 各类版本文档骨架
-├── memories/                  # 角色专属教训库（按角色拆分，持续追加）
-└── tasks/                     # 任务档案实例（一任务一文件）
+```powershell
+npm run test:tray
 ```
 
-## 任务生命周期状态机
+执行基座协议检查：
 
-> **版本是条目的容器**：每个需求/插单/bugfix 是一个条目，各自独立走"菲菲→GG Bond→迷糊老师"的小循环（条目状态记在任务档案「需求条目登记表」）；版本状态 = 最落后条目的聚合态。下图是单条目视角的主流程。
->
-> **条目状态是严格状态机、登记表即唯一事实源**：每条目的「状态」列只能取 `文档格式规范.md` §3.4 的枚举，其**语义/合法流转/一致性规则**（尤其 **`人工Pass`（免 QA 终态）≠ `待测`（预检通过、仍要进 QA）**，以及「哪些条目可进 QA」= `状态∈{待测,待QA,已开发}`）均以 §3.4「状态机语义与流转」为准。**推进条目看登记表状态、不看口头**——一句「预检通过」在多条并行待检时指代不清（v5.15 REQ-0241 被误标 `人工Pass` 搁浅、迷糊只测一个需求点，即此坑）。
-
-```
-CREATED
-  └─ 菲菲 ────────────────────────────────────────────────
-     PM_INTAKE           原始需求结构化 →《需求说明与验收标准》草稿（含 facet 表）
-       └─ ①.5 业务澄清（老板第一次介入）：与老板聊清业务待澄清 → 口径定稿 + 冻结需求快照
-       └─ ①-plus 三方会审（新功能版硬门禁）：技术/测试与菲菲详细聊「设计与实现」，多轮到对齐
-                          （在业务澄清冻结之后、会审结果拍板之前；templates/三方会审-开工前体检.md）
-     PM_WAITING_CONFIRM  会审结果呈老板拍板（老板第二次介入），结论回写（只拍会审新暴露的设计/实现/可测性口径）
-     HANDOFF_TO_DEV      任务卡推进就绪态 + 产出需求卡（templates/handoff-pm-to-dev.md）→ 交棒 GG Bond
-  └─ GG Bond ──────────────────────────────────────────────
-     DEV_UNDERSTANDING   技术确认：业务口径引用菲菲文档，补 DDL/权限/性能/基线核查
-     DEV_WAITING_CONFIRM 待用户拍板「待确认事项」
-     DEV_IMPLEMENTING    编码 + 实施记录滚动更新
-     DEV_SELF_CHECK      性能/权限/testid/数据流 四项自检 + 回填 RELEASE_CHECKLIST
-     DEV_ADVERSARIAL_SWEEP 对抗性 bug 自查（红队视角打自己代码：边界/异常/并发/越权/状态机/回归）
-     HANDOFF             产出交接卡 + 人工预检单（引导半张）；收工 gate【等你拍板】人工预检
-  └─ 老板（人工预检门）────────────────────────────────────
-     HUMAN_PRECHECK      老板亲眼过 UI/UX + 明显 bug（跑起来看，据人工预检单引导）；只记现象、不分类
-                         ├─ 通过（无发现）─→ GG Bond 才【下一棒】迷糊（交 QA）
-                         └─ 有发现 ────────→【下一棒】菲菲单口分诊（判缺陷/变更、按需更新 facet）
-                                             → 合并需求卡增量 → GG Bond 处理 → 重走预检
-  └─ 迷糊老师 ─────────────────────────────────────────────
-     QA_CASE_DESIGN      测试用例文档（读源码，不臆造）
-     QA_AUTOMATION       猪猪 JSON：validate → headless 迭代 → RED 校准 → App-run 终验
-     QA_ANALYZING        结果报告 + 缺陷单（只报事实）
-     QA_FAILED ──→ 回 GG Bond（带缺陷单，修复后回 QA_AUTOMATION 验证 RED→GREEN）
-     QA_PASSED / HANDOFF_TO_DEVOPS   产出交接卡（templates/handoff-qa-to-devops.md）
-  └─ 波比 ────────────────────────────────────────────────
-     DEVOPS_ENUM         逐仓库枚举改动，产出部署服务清单
-     DEVOPS_TEST_RELEASE 发测试：DDL → MR(→master, 显式 target) → 部署
-     DEVOPS_PROD_RELEASE 发线上：确认 master 已含提交 → MR(→release)
-     POST_RELEASE        权限配置确认、验证 SQL、分支清理建议 → 通知菲菲
-  └─ 菲菲 ────────────────────────────────────────────────
-     PM_RELEASE_NOTES    版本发布说明 + CHANGELOG + 权限变更记录 + 微信发版通知文案
-  └─ 波比 ────────────────────────────────────────────────
-     DOCS_PUBLISH        本版全部文档变更 commit + push master（docs(sampling): v<版本> 发布——…）
-DONE
+```sh
+node scripts/check-engine.mjs codex
 ```
 
-**插单回边**：版本进行中冒出的小需求/bugfix → 菲菲插单 intake（登记条目 + 归属判定，用户拍板）→ 并入则版本回 DEV_IMPLEMENTING 条目级推进（已 PASSED 条目不清零，按 GG Bond 影响面声明做增量回归）；波比封板（`frozen: true`）后默认排下一版本。QA 测出的 bug 走缺陷单闭环，不算插单。
+真实模型及工具调用检查（需要有效认证，可能产生模型使用费用）：
 
-状态与门禁记录在任务档案的 YAML frontmatter 里（见 `templates/task-archive.md`），未来 office lab UI 直接 parse frontmatter 渲染看板。
-
-## 员工交流流程图与交接依赖物
-
-### 主流水线（消息载体全部落文件，不靠口头/聊天记录）
-
-```
-              (1)派活：建任务档案 + 原始需求位置
-  你（老板）────────────────┐
-                           ▼
-  原始需求 ──▶ ┌──────┐  需求卡   ┌─────────┐  交接卡   ┌──────────┐  交接卡   ┌──────┐  上线通知  ┌──────┐
-  (PRD/Excel) │ 菲菲  │ ───────▶ │ GG Bond │ ────────▶ │ 迷糊老师  │ ────────▶ │ 波比  │ ────────▶ │ 菲菲  │ ─▶ DONE
-              └──────┘ handoff-  └─────────┘ handoff-  └──────────┘ handoff-  └──────┘           └──────┘
-               需求说明  pm-to-dev  需求确认+   dev-to-qa   用例+JSON+  qa-to-     枚举+MR+          发布三件套
-               +验收标准            实施记录+              结果报告+   devops     部署+收尾          (发布说明/
-               (facet表)           代码+SQL               缺陷单                                   CHANGELOG/
-                                                                                                  权限变更记录)
-
-  ▲ GG Bond → 迷糊老师 之间有一道【人工预检】门（老板亲眼过 UI/UX + 明显 bug）：
-    GG Bond 开发+自检+对抗性自查完 → 出交接卡+人工预检单 →【等你拍板】人工预检 → 老板亲验：
-      · 通过（无发现）→ GG Bond 才【下一棒】迷糊（别用最贵的猪猪自动化去发现一眼可见的问题）
-      · 有发现 →【下一棒】菲菲单口分诊：她判缺陷/变更、按需更新 facet、合并成需求卡增量给 GG Bond → 重走预检
-    老板只记现象不分类——缺陷 vs 变更由 facet 主人菲菲判（业内 UAT→PM 分诊→开发的标准分工）；GG Bond 不接散单、不自行吸收变更。
-
-  ══════════════════ 任务档案 tasks/<任务>.md = 唯一状态总线 ══════════════════
-  （每个员工开工先读、收工必写：frontmatter 状态/门禁、需求条目登记表、产物指针、时间线）
+```sh
+node scripts/check-engine.mjs codex --live --tools
+node scripts/check-engine.mjs claude --live --tools
 ```
 
-### 三条回路（触发条件明确，不是自由往返）
+上述数字是历史发布验证结果，并非此次 README 更新重新执行的结果，也不等同于完整企业业务流程验收。
 
-```
-① 缺陷回路（流水线内置，不过菲菲、不占条目编号）
-   迷糊老师 ──缺陷单(只报可观测事实)──▶ GG Bond ──修复段回填──▶ 迷糊老师 ──RED→GREEN──▶ 关单
+### Independent E2E Verification
 
-② 复核回路（软检查，只提意见不卡流程）
-   迷糊老师 ──测试用例文档──▶ 菲菲(对照facet表轻复核) ──意见──▶ 任务档案时间线
+关联项目 Vision E2E v1.11.3 于 2026-11-19 完成独立验证：
 
-③ 插单回路（迭代中途冒出的小需求/新要求）
-   任何来源（含【人工预检】暴露的需求/重大UX变更）──▶ 菲菲 intake(登记条目+facet) ──归属三选一──▶ 你拍板
-                 ├─ 并入本版 ──需求卡增量──▶ GG Bond(同分支追加,带影响面声明) ──▶ 迷糊老师(增量回归)
-                 ├─ 排队下一版本
-                 └─ 线上急修 ──▶ 独立 hotfix 版本走完整小流水线
-   （波比封板 frozen:true 后，并入需你特批；提 release MR 后一律不并入）
-```
+- 748/748 项自动化回归通过。
+- 真实 Chromium 正例通过、故意设置错误期望的反例失败。
+- 两份运行证据包与截图校验通过。
+- macOS ARM64 目录打包及启动检查通过。
 
-### 你（老板）的固定介入点（6 个，其余环节自动流转）
+可在 [Vision E2E 独立展示仓库](https://github.com/topiniu/vision-e2e-showcase) 中运行其本地演示，详见[独立验证记录](https://github.com/topiniu/vision-e2e-showcase/blob/main/docs/verification.md)。
 
-| # | 介入点 | 谁找你 | 你要做什么 |
-|---|--------|--------|-----------|
-| 1 | 派活 | 你发起 | 建任务档案，指原始需求位置给菲菲 |
-| 2 | 业务拍板 | 菲菲 | 回答需求说明的待确认事项、插单归属三选一 |
-| 3 | 技术拍板 | GG Bond | 回答技术类待确认事项（业务类他会退回菲菲） |
-| 4 | 人工预检 | GG Bond | 据人工预检单跑起来/看图，一眼过 UI/UX + 明显 bug；只记现象不分类——通过则放行交迷糊，有发现则【下一棒】菲菲分诊 |
-| 5 | 发布确认 | 波比 | merge / 生产部署 / 分支清理——他只准备不执行 |
-| 6 | 验收 | 菲菲 | 读版本发布说明，确认任务 DONE |
+以上是 Vision E2E 自身的验证成绩，不计入 Office Lab 的自动化测试结果，也不代表两个公开仓库的联合业务流程已经完成验收。
 
-### 交接依赖物明细表
+## Lessons from Real-world Delivery
 
-| 交接 | 消息载体 | 接收方另需读取的依赖物 | 接收方产出 |
-|------|---------|----------------------|-----------|
-| 你 → 菲菲 | 任务档案（新建） | 原始需求（PRD/Excel/截图） | 需求说明与验收标准（facet 表） |
-| 菲菲 → GG Bond | `handoff-pm-to-dev` 需求卡 | 需求说明与验收标准 | 需求确认文档（技术段）、代码、实施记录、release SQL、CHECKLIST 开发段回填、**人工预检单（引导半张）** |
-| GG Bond → 老板（人工预检门） | `人工预检单`（引导半张）+【等你拍板】人工预检 | 跑起来的改动 / 关键页面 | 预检结论：通过→放行 GG Bond 交迷糊；有发现→【下一棒】菲菲分诊（填人工预检单发现清单） |
-| 老板 → 菲菲（有发现时） | `【下一棒】菲菲` + 人工预检单发现清单 | facet 表、需求确认文档 | 分诊（缺陷/变更）、按需更新 facet、合并需求卡增量 → GG Bond |
-| GG Bond → 迷糊老师（**经人工预检通过后**） | `handoff-dev-to-qa` 交接卡（含门禁自检声明+影响面声明+人工预检已通过） | facet 表、需求确认文档、实施记录、testid 注册表、人工预检单、**最新源码** | 测试用例文档、猪猪 JSON、QA 结果报告、缺陷单、CHECKLIST 缺陷/冒烟段回填 |
-| 迷糊老师 → 波比 | `handoff-qa-to-devops` 交接卡（QA 判定+前置技术债） | QA 结果报告、缺陷单目录、RELEASE_CHECKLIST（审计回填完整性） | 仓库枚举、部署服务清单、MR、DDL 交付执行、上线收尾 |
-| 波比 → 迷糊老师 | 测试部署完成通知 | 部署清单 | 上线冒烟结果（回填 CHECKLIST） |
-| 波比 → 菲菲 | 上线完成通知 | **需求条目登记表**（防漏底账）+ 三来源（原始需求/需求确认/实施记录） | 版本发布说明、CHANGELOG 条目、权限变更记录条目 |
+Office Lab 在 2026 年的企业供应链软件研发实践中持续演进。以下案例来自历史业务迭代，版本号为被交付业务系统的版本号，而非 Office Lab 版本号。
 
-> **格式一律以 [`文档格式规范.md`](文档格式规范.md) 为准。** 各文档/交接卡的 frontmatter、命名、章节结构，以及「页面中间的任务档案卡由 `tasks/*.md` frontmatter + 三个承重章节实时渲染」等机器可解析契约，都在那份规范里；本文件只讲流程与状态机。
+| 历史实践 | 工程意义 |
+| --- | --- |
+| v5.17：34 个历史验收点经新门禁重新计算，有效机签为 0，其中 6 项另缺 RED 校准 | 拒绝缺少可靠证据的历史通过结论；不意味着出现了 34 个缺陷 |
+| 38/38 已登记验收点机签通过后，人工仍发现原始需求遗漏 | 测试覆盖率不等于需求完整性 |
+| v6.0.0：三轮守航推进 9 条核心需求和 33 项界面打磨，最后一轮 QA 会话约 15 小时 | 受约束的长时间自主协作实践 |
+| 同一版本保留 23 项因权限账号缺失而阻断的验收点 | 未验证事项必须显式暴露，而非伪造通过 |
+| v6.0.0 上线后部分功能被业务负责人否定，下一版本恢复旧流程 | 技术正确性不能替代真实用户价值 |
 
-## 设计原则（三条，不许破）
+这些实践推动了 Office Lab 从角色分工工具逐步演进为包含需求追踪、机器质量门禁和人工控制机制的研发工作台。
 
-1. **指针，不复制。** 角色文件只写职责边界、门禁、模板和红线一句话；规范正文永远指向唯一事实源（`agents.md`、`CLAUDE.md`、`docs/e2e-test-case-generation-rules.md`、testid 注册表等）。复制 = 制造会腐烂的副本。
-2. **交接卡传文件指针 + 摘要，不传正文。** 下游自己去读权威文档；卡上只承载改动摘要、风险点、门禁自检声明。
-3. **任务档案是唯一状态源。** 每个角色开工前先读任务档案，收工时回写状态、产物链接和时间线。
+相关原始企业业务数据、账号和历史运行产物不随公开仓库分发。因此上述案例属于作者的历史实践记录，不是公开可复现基准，也不构成生产效率或任务成功率承诺。
 
-## Office Lab 应用（推荐入口）
+## Repository Structure
 
-```bash
-node scripts/bootstrap.mjs      # 一条命令：装依赖 → 构建新 UI → 起引擎 → 开浏览器（Windows / macOS / Linux 通用）
+```text
+office-lab-public/
+├── app/               # 调度引擎、运行时及质量门禁
+│   ├── engines/       # Agent 执行基座适配
+│   ├── public/        # 兼容版工作台
+│   └── test/          # 自动化测试
+├── web/               # React / TypeScript 工作台
+├── roles/             # 六位员工的角色 SOP
+├── .claude/agents/    # Agent 工牌
+├── templates/         # 任务档案及结构化交付模板
+├── docs/              # 架构、设计与技术演进
+├── scripts/           # 启动、检查及迁移工具
+└── tray/              # Windows 托盘组件
 ```
 
-首次跑会装依赖（引擎需 `@anthropic-ai/claude-agent-sdk` 与 `zod`，Node 18+）。装好后想直起引擎：`node app/server.js` → http://127.0.0.1:4800 （引擎 API + 旧 UI；新 shadcn UI 在 4700）。只体检不启动：`node scripts/bootstrap.mjs --doctor`。
+## Scope & Limitations
 
-**两种部署形态**（引擎自动探测，启动日志第二行会打出来）：嵌在 monorepo 下 → 员工工作树 = monorepo 顶层，兄弟仓能力（后端构建/发布枚举/UI 契约）可用；单独 clone 本仓 → 工作树 = 本仓根，兄弟仓能力自动跳过、其余照常。需要手工指定时用 `OFFICE_LAB_WORKSPACE_ROOT`。
+Office Lab 是以本机工作区为中心的研发工作台，并非完整的多租户企业 SaaS 或无人监督生产发布平台。
 
-任务看板（frontmatter 渲染 + 等拍板待办）· 员工派工（headless 拉起，流式观测）· 收工后直接回复/拍板（同会话续聊）。产物仍在仓库文件里，应用只做调度与观测，详见 [`app/README.md`](app/README.md)。
+公开版保留六份角色 SOP、六份 Agent 工牌、模板、调度引擎、审计巡视、技术文档、演进记录、托盘组件及迁移工具。业务标识以示例代替，历史任务、员工记忆、会话、附件及本地凭证从空状态开始。
 
-## 备用方式（终端多会话）
+使用前需要注意：
 
-1. 从 `templates/task-archive.md` 复制一份到 `tasks/<日期>-<任务名>.md`，填基本信息。
-2. 开一个会话给菲菲，开场喂三样：`roles/feifei.md` + 任务档案路径 + 原始需求位置；她产出需求说明与验收标准并组织你拍板。
-3. 菲菲的需求卡 + `roles/ggbond.md` 喂给开发会话；GG Bond 走完产出交接卡后，卡 + `roles/mihu-teacher.md` 喂给 QA 会话；QA→波比同理。
-4. 波比上线收尾后通知菲菲回来写发布三件套（版本发布说明/CHANGELOG/权限变更记录），任务才 DONE。
-5. 每次角色收工，由该角色回写任务档案的 frontmatter 状态与时间线。
+- 模型认证及第三方服务需由使用者自行配置。
+- Claude Code 与 Codex 的原生工具及权限机制并不完全等价。Codex 不执行 Claude 专属 hooks，依赖这些 hooks 的流程应选用 Claude。
+- 引擎默认监听所有网卡，建议设置 `OFFICE_LAB_HOST=127.0.0.1` 限制本机访问。
+- 原版员工默认使用 `bypassPermissions`。角色 SOP、守航契约和宿主工具门禁不等同于完整的操作系统沙箱。
+- 不承诺 Agent 一定正确理解需求，也不将测试通过等同于产品成功。
 
-> **前台（外层会话）调度纪律**：在 supervisor 建成之前，外层会话充当前台调度器——员工（subagent）之间无法直接通信是 Claude Code 的架构事实，衔接由前台完成，这是设计内的。但前台有"三不"：
-> 1. **不转述产物内容**——只传任务档案/交接卡的**路径**和"该谁接棒"，下游员工一律读文件原件（二手转述会引入失真，且绕过了交接卡的门禁声明）；
-> 2. **不代员工干活**——探索代码、写实现、写用例都由对应员工在自己的会话里做，前台替开发跑 Explore 再喂结论 = 员工吃了不带出处的二手事实；
-> 3. **不代用户拍板**——员工的"等拍板事项"原样呈给用户。
+## Documentation
 
-## 下一步
+- [应用与运行机制](app/README.md)
+- [文档索引](docs/README.md)
+- [技术演进与复盘](docs/office-lab-技术演进与复盘.md)
+- [多引擎设计与验证](docs/office-lab-v0.12.0-多引擎.md)
+- [任务档案及文档契约](文档格式规范.md)
+- [早期流程与职责分工复盘](复盘-示例项目v1到v5.10流程提纯.md)
+- [技术深度剖析](docs/interview-preparation/technical/office-lab-project-deep-dive.md)
+- [版本变更记录](CHANGELOG.md)
 
-- [ ] 用下一个真实小版本（v5.10.x 或 v5.11）按本流程完整跑一遍，暴露交接卡缺的字段和卡壳的门禁。
-- [ ] 跑通后再定 office lab 的数据结构与 UI。
+## About
+
+Office Lab 是一项持续演进的 AI 软件工程实践，由项目作者负责架构设计、工程机制制定、系统演进及真实业务交付验证，并借助 Code Agent 完成大量代码实现。
+
+它探索的不只是 AI 能否编写软件，而是当越来越多的软件研发工作交给 AI 后，如何让交付过程仍然可控、可验证、可追责。
+
+问题与建议欢迎通过 [GitHub Issues](https://github.com/topiniu/office-lab-public/issues) 反馈。
